@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hunting Tracker · Rappi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#FF5B15;--orange-lt:#FFF3EE;--orange-mid:#FFD4BE;--orange-dk:#C43D06;
+  /* Semáforo — solo para estados */
+  --green:#16A34A;--green-lt:#F0FDF4;--green-dk:#14532D;
+  --amber:#D97706;--amber-lt:#FFFBEB;--amber-dk:#92400E;
+  --red:#DC2626;--red-lt:#FEF2F2;--red-dk:#7F1D1D;
+  /* Neutros */
+  --dark:#0F0F0F;--mid:#404040;--muted:#737373;--hint:#A3A3A3;
+  --border:#E5E5E5;--border-s:#D4D4D4;
+  --bg:#F9F9F9;--surface:#FFFFFF;--surface2:#F5F5F5;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--dark)}
+button,input,select,textarea{font-family:'Plus Jakarta Sans',sans-serif}
+button{cursor:pointer}
+
+.topbar{background:var(--surface);padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;height:56px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:var(--dark);letter-spacing:-.3px}
+.logo em{color:var(--orange);font-style:normal}
+.role-sw{display:flex;background:var(--surface2);border-radius:8px;padding:3px;gap:3px;border:1px solid var(--border)}
+.role-btn{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;border:none;color:var(--muted);background:none;transition:all .2s}
+.role-btn.active{background:var(--orange);color:#fff}
+
+.nav-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:199}
+.nav{display:flex;overflow-x:auto;scrollbar-width:none;max-width:960px;margin:0 auto;padding:0 24px}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{padding:14px 16px;font-size:12px;font-weight:600;color:var(--hint);background:none;border:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.nav-btn:hover{color:var(--mid)}
+.nav-btn.active{color:var(--orange);border-bottom-color:var(--orange)}
+
+.chips-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:6px}
+.chips-label{font-size:10px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.08em;margin-right:4px}
+.chip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid var(--border);color:var(--muted);background:none;transition:all .2s}
+.chip.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+.chip:hover:not(.active){color:var(--dark);border-color:var(--border-s)}
+
+.content{padding:24px;max-width:960px;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+
+.page-hero{background:var(--orange);border-radius:16px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden}
+.page-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:#fff;opacity:.06}
+.page-hero-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:8px}
+.page-hero-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:6px}
+.page-hero-title span{color:rgba(255,255,255,.85)}
+.page-hero-sub{font-size:12px;color:rgba(255,255,255,.65);line-height:1.5}
+.page-hero-stats{display:flex;gap:20px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.2);flex-wrap:wrap}
+.hero-stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1}
+.hero-stat-val.green{color:#BBF7D0}.hero-stat-val.red{color:#FECACA}.hero-stat-val.amber{color:#FDE68A}
+.hero-stat-label{font-size:10px;color:rgba(255,255,255,.6);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.mgrid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+@media(max-width:640px){.mgrid{grid-template-columns:1fr 1fr}.mgrid-5{grid-template-columns:1fr 1fr}}
+.mcard{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px}
+.mcard-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--hint);margin-bottom:6px}
+.mcard-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:var(--dark);line-height:1}
+.mcard-sub{font-size:11px;color:var(--hint);margin-top:4px}
+
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.card-head{padding:14px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-head-title{font-size:13px;font-weight:700;color:var(--dark)}
+.card-head-sub{font-size:11px;color:var(--hint)}
+.card-body{padding:18px 20px}
+.card-flush{padding:0}
+
+.sdiv{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--hint);display:flex;align-items:center;gap:10px;margin:18px 0 12px}
+.sdiv::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.b-green{background:#F0FDF4;color:#14532D}
+.b-amber{background:#FFFBEB;color:#92400E}
+.b-red{background:#FEF2F2;color:#7F1D1D}
+.b-orange{background:var(--orange-lt);color:var(--orange-dk)}
+.b-purple{background:#F5F3FF;color:#4C1D95}
+.b-lime{background:#F0FDF4;color:#14532D}
+.b-gray{background:var(--surface2);color:var(--muted)}
+
+.pbar{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.mini-bar{flex:1;height:6px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:4px}
+
+.hrow{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1.5px solid var(--border)}
+.hrow:last-child{border-bottom:none}
+.hrow:hover{background:var(--surface2)}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+.ctr-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1.5px solid var(--border)}
+.ctr-row:last-child{border-bottom:none}
+.ctr-label{font-size:13px;font-weight:600;color:var(--dark)}
+.ctr-sub{font-size:11px;color:var(--hint);margin-top:2px}
+.ctr{display:flex;align-items:center;gap:10px}
+.ctr-btn{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--dark);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.ctr-btn:hover{background:var(--orange-lt);border-color:var(--orange);color:var(--orange)}
+.ctr-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:var(--dark);min-width:30px;text-align:center}
+
+.pi{padding:14px 20px;border-bottom:1.5px solid var(--border)}
+.pi:last-child{border-bottom:none}
+.pi:hover{background:var(--surface2)}
+.pi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:10px}
+.pi-name{font-size:14px;font-weight:600;color:var(--dark)}
+.pi-sub{font-size:12px;color:var(--hint);margin-bottom:6px}
+.stage-track{display:flex;gap:4px;margin:8px 0 5px}
+.st{flex:1;height:5px;border-radius:3px;background:var(--surface2)}
+.st.done{background:var(--orange-mid)}.st.cur{background:var(--orange)}.st.bloc{background:#FECACA}
+.st.ho{background:#16A34A}
+.st-label{font-size:11px;color:var(--hint)}
+.pi-action-hint{font-size:11px;color:var(--orange-dk);margin-top:4px}
+.pi-btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+.flabel{font-size:12px;font-weight:600;color:var(--mid);display:block;margin-top:14px}
+.flabel.first{margin-top:0}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;color:var(--dark);background:var(--surface);margin-top:5px;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--orange)}
+textarea{resize:vertical;min-height:72px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;border-radius:9px;border:none;padding:11px 20px;transition:all .2s}
+.btn-p{background:var(--orange);color:#fff;width:100%;margin-top:12px}
+.btn-p:hover{background:var(--orange-dk)}
+.btn-o{background:none;color:var(--orange);border:1.5px solid var(--orange);width:100%;margin-top:8px}
+.btn-o:hover{background:var(--orange-lt)}
+.btn-ghost{background:var(--surface);color:var(--mid);border:1.5px solid var(--border);font-size:11px;padding:5px 12px;border-radius:7px}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.btn-del{background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA;font-size:11px;padding:5px 12px;border-radius:7px}
+.btn-add-sm{background:var(--orange-lt);color:var(--orange-dk);border:1.5px solid var(--orange-mid);font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px}
+.btn-ho{background:#F0FDF4;color:#14532D;border:1.5px solid #BBF7D0;font-size:11px;font-weight:600;padding:5px 12px;border-radius:7px}
+.btn-ho:hover{background:#DCFCE7}
+.btn-ho.done{background:#16A34A;color:#fff;border-color:#16A34A}
+.btn-export{background:var(--surface);color:var(--mid);border:1.5px solid var(--border);font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px}
+.btn-export:hover{border-color:var(--orange);color:var(--orange)}
+
+.tabs{display:flex;background:var(--surface2);border-radius:9px;padding:3px;gap:3px;margin-bottom:16px;border:1.5px solid var(--border)}
+.tab{flex:1;padding:7px 8px;font-size:11px;font-weight:600;border:none;background:none;border-radius:7px;color:var(--hint);transition:all .2s;white-space:nowrap}
+.tab.active{background:var(--surface);color:var(--dark);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+
+.notify{background:#F0FDF4;color:#14532D;border:1.5px solid #BBF7D0;border-radius:10px;padding:11px 16px;font-size:13px;margin-bottom:14px;display:none}
+
+.form-panel{display:none;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:20px;margin-top:12px;margin-bottom:16px}
+.form-panel.open{display:block}
+.form-panel-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:540px){.form-row{grid-template-columns:1fr}}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1.5px solid var(--border)}
+.modal-footer .btn{width:auto;margin:0}
+
+.rank-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;margin-bottom:4px;transition:background .15s}
+.rank-row:hover{background:var(--surface2)}.rank-row.gold{background:#FFFBEB}
+.rank-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;width:22px;text-align:center;flex-shrink:0}
+.rank-num.r1{color:#D97706}.rank-num.r2{color:var(--hint)}.rank-num.r3{color:#EA580C}
+
+.alert-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1.5px solid var(--border)}
+.alert-row:last-child{border-bottom:none}
+.alert-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+
+.diag{border-radius:10px;padding:13px 16px;font-size:13px;line-height:1.6;margin-bottom:10px}
+.emb-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:9px;margin-bottom:5px}
+.week-row{margin-bottom:14px}.week-row:last-child{margin-bottom:0}
+
+.avance-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--orange-lt);border:1.5px solid var(--orange-mid);border-radius:8px;margin-bottom:6px}
+.avance-item-name{flex:1;font-size:12px;font-weight:600;color:var(--orange-dk)}
+.avance-item-stage{font-size:11px;color:var(--orange-dk)}
+.avance-item-del{background:none;border:none;color:var(--orange-dk);font-size:16px;padding:0 4px;opacity:.6}
+.avance-item-del:hover{opacity:1}
+
+.r2s-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;margin-bottom:6px}
+.r2s-item-name{flex:1;font-size:12px;font-weight:600;color:#14532D}
+.r2s-item-del{background:none;border:none;color:#14532D;font-size:16px;padding:0 4px;opacity:.6}
+.r2s-item-del:hover{opacity:1}
+
+.pipe-table{width:100%;border-collapse:collapse;font-size:12px}
+.pipe-table th{background:var(--surface2);color:var(--hint);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:10px 12px;text-align:left;white-space:nowrap;border-bottom:1.5px solid var(--border)}
+.pipe-table td{padding:10px 12px;border-bottom:1.5px solid var(--border);vertical-align:middle;color:var(--dark)}
+.pipe-table tr:last-child td{border-bottom:none}
+.pipe-table tr:hover td{background:var(--surface2)}
+.tbl-wrap{overflow-x:auto}
+
+.mcard.clickable{cursor:pointer;transition:all .15s}
+.mcard.clickable:hover{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-lt)}
+@media(max-width:600px){.mes-two-col{grid-template-columns:1fr!important}}
+
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-s);background:none;transition:all .15s}
+.pin-dot.filled{background:var(--orange);border-color:var(--orange)}
+.pin-key{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:600;color:var(--dark);cursor:pointer;transition:all .15s}
+.pin-key:hover{background:var(--orange-lt);border-color:var(--orange);color:var(--orange)}
+.pin-key:active{transform:scale(.93)}
+
+.prop-slot{background:var(--surface2);border:1.5px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px}
+@media print{
+  body>*{display:none!important}
+  #reporte-cierre{display:block!important;position:static!important;padding:0!important;background:#fff!important}
+  #reporte-cierre>div>div:first-child{display:none!important}
+}
+.prop-slot-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.prop-slot-num{width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prop-slot-title{font-size:13px;font-weight:600;color:var(--dark);flex:1}
+.prop-slot-badge{font-size:10px}
+.prop-slot .form-row{margin-bottom:0}
+
+/* Autocomplete */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 9px 9px;z-index:50;max-height:200px;overflow-y:auto;display:none}
+.ac-list.open{display:block}
+.ac-item{padding:9px 13px;font-size:13px;cursor:pointer;color:var(--dark)}
+.ac-item:hover{background:var(--orange-lt);color:var(--orange-dk)}
+ 
+#_toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-8px);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:all .35s;opacity:0;pointer-events:none;max-width:88vw;text-align:center;color:#fff}
+ 
+.demo-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:6px;z-index:400}
+.demo-wrap button{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border-radius:10px;padding:10px 16px;box-shadow:0 2px 10px rgba(0,0,0,.15);transition:all .2s;cursor:pointer}
+</style>
+</head>
+<body>
+ 
+<div class="topbar">
+  <div class="logo">Hunting<em>Tracker</em></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onclick="volverLogin()" style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;cursor:pointer;transition:all .2s" onmouseover="this.style.color='var(--dark)';this.style.borderColor='var(--border-s)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">← Pág. principal</button>
+    <div class="role-sw">
+      <button class="role-btn active" onclick="setRole('hunter',this)">Vista Hunter</button>
+      <button class="role-btn" onclick="setRole('lider',this)">Vista Líder</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="nav-wrap" id="nw-hunter">
+  <div class="nav" id="nav-hunter">
+    <button class="nav-btn active" onclick="showS('h-inicio',this,'hunter')">Inicio</button>
+    <button class="nav-btn" onclick="showS('h-pipeline',this,'hunter')">Mi pipeline</button>
+    <button class="nav-btn" onclick="showS('h-mes',this,'hunter')">Mi mes</button>
+  </div>
+</div>
+<div class="chips-wrap" id="hunter-chips">
+  <span class="chips-label">Soy</span>
+  <button class="chip active" onclick="selectHunter(1,this)">H1</button>
+  <button class="chip" onclick="selectHunter(2,this)">H2</button>
+  <button class="chip" onclick="selectHunter(3,this)">H3</button>
+  <button class="chip" onclick="selectHunter(4,this)">H4</button>
+  <button class="chip" onclick="selectHunter(5,this)">H5</button>
+  <button class="chip" onclick="selectHunter(6,this)">H6</button>
+  <button class="chip" onclick="selectHunter(7,this)">H7</button>
+</div>
+ 
+<div class="nav-wrap" id="nw-lider" style="display:none">
+  <div class="nav" id="nav-lider">
+    <button class="nav-btn active" onclick="showS('l-dash',this,'lider')">Dashboard</button>
+    <button class="nav-btn" onclick="showS('l-alertas',this,'lider')">Alertas</button>
+    <button class="nav-btn" onclick="showS('l-hunters',this,'lider')">Ver hunters</button>
+    <button class="nav-btn" onclick="showS('l-config',this,'lider')">Configuración</button>
+  </div>
+</div>
+ 
+<div class="content">
+ 
+<!-- ══ INICIO ══ -->
+<div class="screen active" id="h-inicio">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow" id="h-eyebrow">Hunter 1</div>
+    <div class="page-hero-title">Buenos días,<br><span id="h-hero-name">Hunter</span></div>
+    <div class="page-hero-sub" id="h-hero-date"></div>
+    <div id="h-hero-progreso" style="margin-top:16px"></div>
+  </div>
+  <div id="h-puntos-card"></div>
+  <div id="h-alertas-hoy"></div>
+  <!-- Registro del día integrado -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-head"><span class="card-head-title">Registro del día</span><span class="card-head-sub" id="reg-date-label"></span></div>
+    <div class="card-body">
+      <div id="reg-notify" class="notify"></div>
+      <div class="ctr-row">
+        <div><div class="ctr-label">Prospectos visitados</div><div class="ctr-sub">meta: 20 por día</div></div>
+        <div class="ctr"><button class="ctr-btn" onclick="chg('vis',-1)">−</button><span class="ctr-val" id="vis">0</span><button class="ctr-btn" onclick="chg('vis',1)">+</button></div>
+      </div>
+      <div class="ctr-row" style="border-bottom:none">
+        <div><div class="ctr-label">Propuestas entregadas</div><div class="ctr-sub">Completa los datos de cada restaurante abajo</div></div>
+        <div class="ctr"><button class="ctr-btn" onclick="chgProp(-1)">−</button><span class="ctr-val" id="prop">0</span><button class="ctr-btn" onclick="chgProp(1)">+</button></div>
+      </div>
+      <div id="prop-slots" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--hint);margin-bottom:12px">Datos de cada restaurante</div>
+        <div id="prop-slots-list"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-p" style="margin-bottom:6px" onclick="guardarRegistro()">Guardar registro del día</button>
+  <button class="btn btn-o" onclick="showS('h-pipeline',document.querySelectorAll('#nav-hunter .nav-btn')[1],'hunter')">Ver mi pipeline →</button>
+</div>
+
+<!-- MODAL CONFIRMACIÓN GUARDAR -->
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-title">Confirmar registro del día</div>
+    <div id="confirm-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-o" style="width:auto;padding:9px 20px" onclick="document.getElementById('confirm-modal').classList.remove('open')">Revisar</button>
+      <button class="btn btn-p" style="width:auto;padding:9px 20px;margin:0" onclick="confirmarGuardar()">Confirmar y guardar</button>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ══ PIPELINE ══ -->
+<div class="screen" id="h-pipeline">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow">Pipeline activo</div>
+    <div class="page-hero-title">Mis restaurantes<br><span id="pipe-hero-count">en gestión</span></div>
+    <div class="page-hero-sub">Solo entran restaurantes que recibieron propuesta. El HO se marca directamente aquí.</div>
+  </div>
+  <!-- Resumen por etapas -->
+  <div class="card" id="pipe-etapas-resumen" style="margin-bottom:14px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div class="tabs" style="margin:0;flex:1" id="pipe-filters">
+      <button class="tab active" onclick="filterP('todos',this)">Todos</button>
+      <button class="tab" onclick="filterP('cierre',this)">En cierre</button>
+      <button class="tab" onclick="filterP('bloqueado',this)">Bloqueados</button>
+      <button class="tab" onclick="filterP('backlog',this)">Backlog</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select onchange="pSort=this.value;renderPipe()" style="font-size:11px;font-weight:600;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--dark);cursor:pointer">
+        <option value="etapa">Ordenar: Etapa</option>
+        <option value="fechaPropuesta">Ordenar: Fecha propuesta</option>
+        <option value="fechaAlerta">Ordenar: Próx. actividad</option>
+      </select>
+      <button class="btn-add-sm" onclick="toggleAddModal()">+ Nuevo restaurante</button>
+    </div>
+  </div>
+  <div class="form-panel" id="add-modal">
+    <div class="form-panel-title">Agregar restaurante al pipeline</div>
+    <div class="form-row">
+      <div><label class="flabel first">Nombre del restaurante</label><input type="text" id="new-rest" placeholder="Ej: Asadero Don Rodrigo"></div>
+      <div><label class="flabel first">Nombre del dueño / decisor</label><input type="text" id="new-dec" placeholder="Nombre completo"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="flabel">Teléfono</label><input type="text" id="new-tel" placeholder="300 000 0000"></div>
+      <div><label class="flabel">Etapa actual</label>
+        <select id="new-etapa">
+          <option value="1">1 — Propuesta enviada · Pdt Interés</option>
+          <option value="2">2 — Documentos · Docs parciales</option>
+          <option value="3">3 — Esperando firma</option>
+          <option value="4">4 — Contrato firmado · Pdt Menú</option>
+          <option value="5">5 — R2S completo · HO entregado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label class="flabel">Fecha de entrega de propuesta</label><input type="date" id="new-fecha-prop" oninput="validateFechaProp(this)"><div id="new-fecha-prop-err" style="font-size:11px;color:#E24B4A;margin-top:3px;display:none">Solo hoy o ayer</div></div>
+      <div><label class="flabel">Fecha alerta próximo contacto</label><input type="date" id="new-fecha-accion" oninput="validateFechaAlerta(this)"></div>
+    </div>
+    <label class="flabel">Próxima acción / notas</label>
+    <textarea id="new-notas" placeholder="Describe la próxima acción o cualquier nota relevante del restaurante..." style="min-height:60px"></textarea>
+    <div class="form-row" style="margin-top:4px">
+      <div><label class="flabel first">Tipo de restaurante</label>
+        <select id="new-tipo">
+          <option value="p0">P0</option>
+          <option value="p1">P1</option>
+          <option value="p2" selected>P2+</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-p" style="margin-top:0" onclick="agregarRest()">Guardar en pipeline</button>
+      <button class="btn btn-o" style="margin-top:0;width:auto;padding:11px 20px" onclick="toggleAddModal()">Cancelar</button>
+    </div>
+  </div>
+  <div class="card" style="overflow:hidden" id="pipe-list"></div>
+</div>
+ 
+<!-- ══ MI MES ══ -->
+<div class="screen" id="h-mes">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow">Resumen mensual</div>
+    <div class="page-hero-title">Mi mes<br><span id="h-mes-hero"></span></div>
+    <div id="h-mes-progreso" style="margin-top:16px"></div>
+  </div>
+  <div id="h-mes-puntos"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" class="mes-two-col">
+    <div class="card" style="margin-bottom:0"><div class="card-head"><span class="card-head-title">Progreso semanal</span></div><div class="card-body" id="h-semanas"></div></div>
+    <div class="card" style="margin-bottom:0"><div class="card-head"><span class="card-head-title">Mi embudo del mes</span></div><div class="card-body" id="h-embudo"></div></div>
+  </div>
+  <div class="card"><div class="card-head"><span class="card-head-title">Historial de registros</span></div><div class="card-body" id="h-historial"></div></div>
+  <div style="margin-top:8px">
+    <button class="btn btn-o" onclick="abrirCierreHunter()" style="border-color:var(--orange);color:var(--orange)">📅 Ver reporte y cerrar mi mes</button>
+  </div>
+</div>
+
+<!-- MODAL DETALLE MÉTRICA -->
+<div class="modal-bg" id="metrica-modal">
+  <div class="modal">
+    <div class="modal-title" id="metrica-modal-title">Detalle</div>
+    <div id="metrica-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-p" style="width:auto;padding:9px 20px;margin:0" onclick="document.getElementById('metrica-modal').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ══ LÍDER: DASHBOARD ══ -->
+<div class="screen" id="l-dash">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow">Vista líder · lectura matutina</div>
+    <div class="page-hero-title">Dashboard<br><span id="l-dash-date">del equipo</span></div>
+    <div class="page-hero-sub" id="l-hero-stats"></div>
+  </div>
+  <div class="mgrid" id="l-dash-metrics"></div>
+  <div class="card" style="overflow:hidden">
+    <div class="card-head">
+      <div style="display:flex;gap:8px;width:100%;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--hint)">
+        <span style="width:22px">#</span><span style="flex:1">Hunter</span>
+        <span style="width:50px;text-align:center">R2S</span>
+        <span style="width:60px;text-align:center">HO pdt.</span>
+        <span style="width:56px;text-align:center">Backlog</span>
+        <span style="width:64px;text-align:center">Estado</span>
+      </div>
+    </div>
+    <div style="padding:8px 16px" id="ranking-rows"></div>
+  </div>
+</div>
+ 
+<!-- ══ LÍDER: ALERTAS ══ -->
+<div class="screen" id="l-alertas">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow">Alertas activas · acción hoy</div>
+    <div class="page-hero-title">¿Quién necesita<br><span>atención?</span></div>
+    <div class="page-hero-sub">Los hunters debajo del semáforo verde requieren seguimiento activo.</div>
+  </div>
+  <div id="l-alertas-rojo" style="display:none" class="card"><div class="card-head"><span class="card-head-title" style="color:#DC2626">Intervención inmediata</span><span class="badge b-red">Rojo</span></div><div class="card-body" id="l-alertas-rojo-list"></div></div>
+  <div id="l-alertas-amarillo" style="display:none" class="card"><div class="card-head"><span class="card-head-title" style="color:#D97706">Monitoreo activo</span><span class="badge b-amber">Amarillo</span></div><div class="card-body" id="l-alertas-amarillo-list"></div></div>
+  <div id="l-alertas-verde" style="display:none" class="card"><div class="card-head"><span class="card-head-title" style="color:#059669">En meta</span><span class="badge b-green">Verde</span></div><div class="card-body" id="l-alertas-verde-list"></div></div>
+  <div class="card"><div class="card-head"><span class="card-head-title">Proyección HOs esta semana</span></div><div class="card-body" id="l-ho-proyeccion"></div></div>
+</div>
+ 
+<!-- ══ LÍDER: VER HUNTERS ══ -->
+<div class="screen" id="l-hunters">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow">Diagnóstico individual</div>
+    <div class="page-hero-title">Ver en detalle<br><span>a cada hunter</span></div>
+    <div class="page-hero-sub">Diagnóstico, métricas y pipeline completo del hunter seleccionado.</div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <label class="flabel first">Selecciona un hunter</label>
+      <select id="hunter-select" onchange="verHunter(this.value)">
+        <option value="">— Selecciona —</option>
+        <option value="1">Hunter 1</option><option value="2">Hunter 2</option>
+        <option value="3">Hunter 3</option><option value="4">Hunter 4</option>
+        <option value="5">Hunter 5</option><option value="6">Hunter 6</option>
+        <option value="7">Hunter 7</option>
+      </select>
+    </div>
+  </div>
+  <div id="hunter-detail"></div>
+</div>
+ 
+<!-- ══ LÍDER: CONFIGURACIÓN ══ -->
+<div class="screen" id="l-config">
+  <div class="page-hero">
+    <div class="page-hero-eyebrow">Configuración · solo visible para el líder</div>
+    <div class="page-hero-title">Nombres y<br><span>metas del equipo</span></div>
+    <div class="page-hero-sub">Define el nombre real y la meta mensual de cada hunter. Todos los cálculos se ajustan automáticamente.</div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Equipo de 7 hunters</span><button class="btn-add-sm" onclick="saveConfig();saveClaves()">Guardar cambios</button></div>
+    <div class="card-body" id="config-body"></div>
+  </div>
+  <div class="card" style="border:2px solid var(--orange)">
+    <div class="card-head">
+      <div>
+        <span class="card-head-title" style="color:var(--orange)">📅 Cierre de mes</span>
+        <div style="font-size:11px;color:var(--hint);margin-top:3px">Genera el reporte visual y reinicia los contadores para el nuevo mes</div>
+      </div>
+      <button class="btn-add-sm" onclick="abrirCierreMes()">Ver reporte y cerrar mes</button>
+    </div>
+    <div class="card-body">
+      <div style="font-size:12px;color:var(--muted);line-height:1.7">
+        ✓ Descarga el reporte visual de cada hunter (activaciones, puntos, cierres)<br>
+        ✓ Elimina los restaurantes con HO entregado del pipeline<br>
+        ✓ Conserva el pipeline activo para el nuevo mes<br>
+        ✓ Reinicia registros diarios y contadores
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- MODAL CONFIRMACIÓN CIERRE HUNTER -->
+<div class="modal-bg" id="cierre-hunter-modal" style="z-index:9100">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">📅 Cerrar mi mes</div>
+    <div id="cierre-hunter-step1">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7">
+        Antes de cerrar, confirma que:<br>
+        ✓ Actualizaste todos tus cierres R2S con HO entregado<br>
+        ✓ Marcaste como Backlog los que pasan al mes siguiente<br>
+        ✓ Tu pipeline refleja el estado real de hoy
+      </div>
+      <div style="background:var(--amber-lt);border:1.5px solid #FCD34D;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#92400E">
+        ⚠ Los restaurantes con HO entregado desaparecerán del pipeline. El resto continúa.
+      </div>
+      <div class="modal-footer" style="padding-top:0;margin-top:0;border-top:none">
+        <button class="btn btn-o" style="width:auto;padding:9px 20px;margin:0" onclick="document.getElementById('cierre-hunter-modal').classList.remove('open')">Cancelar — aún no</button>
+        <button class="btn btn-p" style="width:auto;padding:9px 20px;margin:0" onclick="cierreHunterVerReporte()">Sí, ya actualicé todo →</button>
+      </div>
+    </div>
+    <div id="cierre-hunter-step2" style="display:none">
+      <div style="text-align:center;padding:8px 0 16px">
+        <div style="font-size:32px;margin-bottom:8px">✅</div>
+        <div style="font-size:14px;font-weight:700;color:var(--dark)" id="cierre-hunter-ok-msg"></div>
+        <div style="font-size:12px;color:var(--hint);margin-top:4px">Mes cerrado correctamente</div>
+      </div>
+      <button class="btn btn-o" style="margin-bottom:8px" onclick="deshacerCierreHunter()">↩ Me equivoqué — deshacer cierre</button>
+      <button class="btn btn-p" style="margin-top:0" onclick="document.getElementById('cierre-hunter-modal').classList.remove('open');renderInicio();">Listo, iniciar nuevo mes</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="cierre-modal" style="z-index:9100;align-items:flex-start;padding:20px;overflow-y:auto">
+  <div class="modal" style="max-width:680px;width:100%;margin:auto">
+    <div class="modal-title">📅 Cierre de mes — <span id="cierre-mes-label"></span></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Revisa el resumen de cada hunter antes de ejecutar el cierre.</div>
+    <div id="cierre-hunters-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+    <div style="background:var(--red-lt);border:1.5px solid #FECACA;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:#7F1D1D;margin-bottom:4px">⚠ Acción irreversible</div>
+      <div style="font-size:12px;color:#7F1D1D">Al ejecutar el cierre se eliminarán todos los restaurantes con HO entregado y se limpiarán los registros diarios. El pipeline activo se conserva.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-o" style="width:auto;padding:9px 20px;margin:0" onclick="document.getElementById('cierre-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-p" style="width:auto;padding:9px 20px;margin:0;background:#DC2626" onclick="ejecutarCierreMes()">Ejecutar cierre de mes</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTE VISUAL CIERRE (para imprimir/capturar) -->
+<div id="reporte-cierre" style="display:none;position:fixed;inset:0;background:#f5f5f5;z-index:9200;overflow-y:auto;padding:24px">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:var(--dark)">Hunting<span style="color:var(--orange)">Tracker</span> <span style="font-size:14px;font-weight:400;color:var(--hint)">· Reporte de cierre</span></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="window.print()" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">🖨 Imprimir / Guardar</button>
+        <button onclick="cerrarReporte()" style="background:var(--surface2);color:var(--dark);border:1.5px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">✕ Cerrar</button>
+      </div>
+    </div>
+    <div id="reporte-contenido"></div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA DE LOGIN ══ -->
+<div id="login-screen" style="position:fixed;inset:0;background:#fff;z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:360px">
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;color:var(--dark);margin-bottom:6px">Hunting<span style="color:var(--orange)">Tracker</span></div>
+      <div style="font-size:13px;color:var(--hint)">Rappi · Sistema de seguimiento</div>
+    </div>
+
+    <!-- Paso 1: elegir rol -->
+    <div id="login-step1">
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px">¿Cómo quieres ingresar?</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="loginElegirRol('hunter')" style="background:var(--orange);color:#fff;border:none;border-radius:12px;padding:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Soy Hunter</button>
+        <button onclick="loginElegirRol('lider')" style="background:var(--surface2);color:var(--dark);border:1.5px solid var(--border);border-radius:12px;padding:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Soy Líder</button>
+      </div>
+      <!-- Botón crear propuesta -->
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);text-align:center">
+        <button onclick="abrirModalPropuesta()" style="background:none;border:1.5px solid var(--orange);color:var(--orange);border-radius:12px;padding:12px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;width:100%">📋 Crear propuesta</button>
+      </div>
+    </div>
+
+    <!-- Paso 2: hunter elige su nombre -->
+    <div id="login-step2" style="display:none">
+      <button onclick="loginBack(1)" style="background:none;border:none;color:var(--hint);font-size:13px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;margin-bottom:16px;padding:0">← Volver</button>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">¿Cuál es tu nombre?</div>
+      <div id="login-hunter-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <!-- Paso 3: ingresar PIN -->
+    <div id="login-step3" style="display:none">
+      <button onclick="loginBack(2)" style="background:none;border:none;color:var(--hint);font-size:13px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;margin-bottom:16px;padding:0">← Volver</button>
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:12px;color:var(--hint);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;font-weight:700">PIN de 4 dígitos</div>
+        <div id="login-pin-name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:var(--dark)"></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:28px" id="login-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto">
+        <button class="pin-key" onclick="loginPin(1)">1</button>
+        <button class="pin-key" onclick="loginPin(2)">2</button>
+        <button class="pin-key" onclick="loginPin(3)">3</button>
+        <button class="pin-key" onclick="loginPin(4)">4</button>
+        <button class="pin-key" onclick="loginPin(5)">5</button>
+        <button class="pin-key" onclick="loginPin(6)">6</button>
+        <button class="pin-key" onclick="loginPin(7)">7</button>
+        <button class="pin-key" onclick="loginPin(8)">8</button>
+        <button class="pin-key" onclick="loginPin(9)">9</button>
+        <div></div>
+        <button class="pin-key" onclick="loginPin(0)">0</button>
+        <button class="pin-key" onclick="loginPinDel()">⌫</button>
+      </div>
+      <div id="login-error" style="text-align:center;color:#DC2626;font-size:12px;font-weight:600;margin-top:16px;display:none">PIN incorrecto. Inténtalo de nuevo.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CREAR PROPUESTA -->
+<div class="modal-bg" id="propuesta-modal" style="z-index:9500">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title">📋 Crear propuesta</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">¿A nombre de qué hunter registras esta propuesta?</div>
+    <div id="propuesta-hunter-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <div id="propuesta-confirmado" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:32px;margin-bottom:10px">✅</div>
+      <div style="font-size:15px;font-weight:700;color:var(--dark)" id="propuesta-ok-msg"></div>
+      <div style="font-size:12px;color:var(--hint);margin-top:4px">Propuesta registrada correctamente</div>
+    </div>
+    <div class="modal-footer" id="propuesta-footer">
+      <button class="btn btn-o" style="width:auto;padding:9px 20px;margin:0" onclick="cerrarModalPropuesta()">Cancelar</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- MODAL EDITAR PIPELINE -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title" id="edit-modal-title">Editar restaurante</div>
+    <div class="form-row">
+      <div><label class="flabel first">Nombre</label><input type="text" id="em-nombre"></div>
+      <div><label class="flabel first">Dueño / Decisor</label><input type="text" id="em-decisor"></div>
+    </div>
+    <div class="form-row">
+      <div><label class="flabel">Teléfono</label><input type="text" id="em-telefono"></div>
+      <div><label class="flabel">Etapa actual</label>
+        <select id="em-etapa">
+          <option value="1">1 — Propuesta enviada · Pdt Interés</option>
+          <option value="2">2 — Documentos · Docs parciales</option>
+          <option value="3">3 — Esperando firma</option>
+          <option value="4">4 — Contrato firmado · Pdt Menú</option>
+          <option value="5">5 — R2S completo · HO entregado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label class="flabel">Fecha entrega propuesta</label><input type="date" id="em-fecha-prop" disabled style="opacity:.5;cursor:not-allowed;background:#f1efe8"><div style="font-size:10px;color:var(--hint);margin-top:3px">No modificable después de registrada</div></div>
+      <div id="em-fecha-accion-wrap"><label class="flabel">Fecha alerta próximo contacto</label><input type="date" id="em-fecha-accion" oninput="validateFechaAlerta(this)"></div>
+    </div>
+    <label class="flabel">Próxima acción / notas</label>
+    <textarea id="em-notas" style="min-height:60px"></textarea>
+    <label class="flabel">¿Backlog?</label>
+    <select id="em-backlog"><option value="no">No</option><option value="si">Sí — HO mes siguiente</option></select>
+    <label class="flabel">Tipo de restaurante</label>
+    <select id="em-tipo">
+      <option value="p0">P0</option>
+      <option value="p1">P1</option>
+      <option value="p2">P2+</option>
+    </select>
+    <!-- HO section — shown only when etapa = 6 -->
+    <div id="em-ho-section" style="display:none;margin-top:16px;padding:14px;background:#ECFDF5;border-radius:10px;border:1px solid #6EE7B7">
+      <div style="font-size:13px;font-weight:500;color:#065F46;margin-bottom:10px">Handoff a posventa</div>
+      <div id="em-ho-alert" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:8px 12px;font-size:12px;color:#7F1D1D;margin-bottom:10px"></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#065F46">
+          <input type="checkbox" id="em-ho-check" onchange="toggleHOcheck()" style="width:18px;height:18px;cursor:pointer;accent-color:#059669">
+          HO entregado a posventa
+        </label>
+        <span id="em-ho-fecha-label" style="font-size:11px;color:#059669;display:none"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-o" style="width:auto;padding:9px 20px" onclick="closeEditModal()">Cancelar</button>
+      <button class="btn btn-p" style="width:auto;padding:9px 20px;margin:0" onclick="saveEditModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="demo-wrap">
+  <button id="demo-btn" onclick="loadDemoData()" style="background:var(--orange);color:#fff;border:none">🧪 Cargar datos demo</button>
+  <button onclick="clearDemoData()" style="background:#fff;color:var(--muted);border:1px solid var(--border)">🗑 Borrar todo</button>
+</div>
+ 
+<script>
+const META=20;
+const STAGES=['','Propuesta enviada · Pdt Interés','Documentos · Docs parciales','Esperando firma','Contrato firmado · Pdt Menú','R2S completo · HO entregado'];
+const HN_DEFAULT=['Hunter 1','Hunter 2','Hunter 3','Hunter 4','Hunter 5','Hunter 6','Hunter 7'];
+const AVC=[{bg:'#E1F5EE',c:'#085041'},{bg:'#EEEDFE',c:'#3C3489'},{bg:'#FAEEDA',c:'#633806'},{bg:'#FCEBEB',c:'#791F1F'},{bg:'#EAF3DE',c:'#27500A'},{bg:'#FFF0EA',c:'#993c1d'},{bg:'#F1EFE8',c:'#5F5E5A'}];
+ 
+// Config: nombre + meta por hunter
+function getCfg(){return gd('ht_cfg')||{names:HN_DEFAULT.slice(),metas:Array(7).fill(20),metasPuntos:Array(7).fill(30)};}
+function setCfg(c){sd('ht_cfg',c);}
+function hunterName(id){return getCfg().names[id-1]||HN_DEFAULT[id-1];}
+function hunterMeta(id){return getCfg().metas[id-1]||20;}
+function hunterMetaPuntos(id){return getCfg().metasPuntos?.[id-1]||30;}
+// HN array dynamic
+function HN(){return getCfg().names;}
+
+// ── CÁLCULO DE PUNTOS ──
+// Se desbloquea cuando HO >= meta de activaciones
+// P0 x2, P1 x1, P2+ sin cambio TP = 0
+function calcPuntos(id){
+  const d=gHD(id);
+  const meta=hunterMeta(id);
+  const metaPuntos=hunterMetaPuntos(id);
+  const ho=d.pipeline.filter(p=>p.hoEntregado&&(p.tipo||'p2')!=='p2').length;
+  const desbloqueado=ho>=meta;
+  let puntos=0;
+  if(desbloqueado){
+    d.pipeline.filter(p=>p.hoEntregado).forEach(p=>{
+      const tp=(p.tipo||'p2').toLowerCase();
+      if(tp==='p0') puntos+=2;
+      else if(tp==='p1') puntos+=1;
+      // p2+ = 0 puntos
+    });
+  }
+  return{puntos,desbloqueado,metaPuntos,pct:desbloqueado?puntos/metaPuntos:0,ho,meta};
+}
+ 
+let cH=1, editIdx=null, pF='todos', pSort='etapa';
+let tmpAvances=[], tmpR2S=[], avSelectedNombre='', r2sSelectedNombre='';
+ 
+function gd(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function sd(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function gHD(id){return gd('ht_'+id)||{daily:[],pipeline:[]}}
+function sHD(id,d){sd('ht_'+id,d)}
+ 
+function today(){return new Date().toISOString().split('T')[0]}
+function todayFmt(){return new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+function monthStr(){return today().substring(0,7)}
+function dAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0]}
+function dAhead(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]}
+function daysSince(ds){if(!ds)return 999;const d=new Date(ds+'T12:00:00'),n=new Date();n.setHours(12,0,0,0);return Math.max(0,Math.floor((n-d)/86400000))}
+function isLastWeek(dateStr){if(!dateStr)return false;const day=parseInt((dateStr||'').split('-')[2]||0);return day>=22;}
+ 
+function autoSt(p){
+  if(p.hoEntregado)return{label:'HO Entregado',cls:'b-green'}
+  if(p.backlog==='si'&&!p.hoEntregado)return{label:'Backlog',cls:'b-orange'}
+  const e=parseInt(p.etapa||1),d=daysSince(p.fechaAlerta||p.fechaPropuesta),a=p.notas&&p.notas.trim()!=='';
+  if(e>=5)return{label:'En cierre',cls:'b-purple'}
+  if(d>3||!a)return{label:'Bloqueado',cls:'b-red'}
+  return{label:'Activo',cls:'b-green'}
+}
+function pCol(p){return p>=.9?'#1D9E75':p>=.6?'#EF9F27':'#E24B4A'}
+function pBdg(p){return p>=.9?'b-green':p>=.6?'b-amber':'b-red'}
+function pLbl(p){return p>=.9?'Verde':p>=.6?'Amarillo':'Rojo'}
+ 
+function calcSt(id){
+  const d=gHD(id),t=today(),m=monthStr();
+  const meta=hunterMeta(id);
+  const me=d.daily.filter(x=>x.fecha&&x.fecha.startsWith(m));
+  // HO = activaciones reales: solo P0 y P1 (P2+ no cuenta para la meta)
+  const ho=d.pipeline.filter(p=>p.hoEntregado&&(p.tipo||'p2')!=='p2').length;
+  // R2S = todos los que llegaron a etapa 6
+  const r2s=d.pipeline.filter(p=>parseInt(p.etapa||1)>=5).length;
+  const vis=me.reduce((s,x)=>s+(x.vis||0),0);
+  const prop=me.reduce((s,x)=>s+(x.prop||0),0);
+  const bloq=d.pipeline.filter(p=>autoSt(p).label==='Bloqueado').length;
+  const enC=d.pipeline.filter(p=>parseInt(p.etapa||1)>=5).length;
+  const back=d.pipeline.filter(p=>p.backlog==='si'&&!p.hoEntregado).length;
+  const upd=d.daily.some(x=>x.fecha===t);
+  const yS=dAgo(1);
+  const r2sAyer=d.pipeline.filter(p=>parseInt(p.etapa||1)>=5).length;
+  const yE=d.daily.find(x=>x.fecha===yS);
+  const yEWithR2S={...(yE||{}),r2s:r2sAyer};
+  // pct se basa en HO entregados (alcance real de meta)
+  return{r2s,ho,vis,prop,bloq,enC,back,pipe:d.pipeline.length,upd,yE:yEWithR2S,r2sAyer,pct:ho/meta,meta,daily:d.daily,pipeData:d.pipeline};
+}
+function wkR2S(id){
+  const m=monthStr();
+  const pipe=gHD(id).pipeline;
+  const w=[0,0,0,0];
+  pipe.filter(p=>parseInt(p.etapa||1)>=5).forEach(p=>{
+    const fecha=p.r2sFecha||p.hoFecha||p.fechaPropuesta||'';
+    const day=parseInt((fecha.split('-')[2])||1);
+    w[Math.min(3,Math.floor((day-1)/7))]++;
+  });
+  return w;
+}
+ 
+// NAV
+function setRole(r,b){
+  document.querySelectorAll('.role-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.getElementById('nw-hunter').style.display=r==='hunter'?'block':'none';
+  document.getElementById('hunter-chips').style.display=r==='hunter'?'flex':'none';
+  document.getElementById('nw-lider').style.display=r==='lider'?'block':'none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  if(r==='hunter'){document.getElementById('h-inicio').classList.add('active');document.querySelectorAll('#nav-hunter .nav-btn')[0].classList.add('active');renderInicio();}
+  else{document.getElementById('l-dash').classList.add('active');document.querySelectorAll('#nav-lider .nav-btn')[0].classList.add('active');renderDash();}
+}
+function showS(id,btn,role){
+  const ns=role==='hunter'?'#nav-hunter .nav-btn':'#nav-lider .nav-btn';
+  document.querySelectorAll(ns).forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const map={'h-inicio':renderInicio,'h-pipeline':renderPipe,'h-mes':renderMes,'l-dash':renderDash,'l-alertas':renderAlertas,'l-config':renderConfig,'l-hunters':()=>{}};
+  if(map[id])map[id]();
+}
+function selectHunter(id,btn){
+  cH=id;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));btn.classList.add('active');
+  renderInicio();renderPipe();
+}
+function chg(id,d){const el=document.getElementById(id);el.textContent=Math.max(0,parseInt(el.textContent)+d);}
+
+// ── PROP SLOTS ──
+let propSlotData=[];
+
+function chgProp(d){
+  const el=document.getElementById('prop');
+  const cur=Math.max(0,parseInt(el.textContent)+d);
+  el.textContent=cur;
+  // Adjust propSlotData array size
+  while(propSlotData.length<cur) propSlotData.push({nombre:'',decisor:'',telefono:'',etapa:'1',tipo:'p2',tp:false,fechaPropuesta:today(),fechaAlerta:'',notas:''});
+  while(propSlotData.length>cur) propSlotData.pop();
+  renderPropSlots();
+}
+
+function renderPropSlots(){
+  const wrap=document.getElementById('prop-slots');
+  const list=document.getElementById('prop-slots-list');
+  if(propSlotData.length===0){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  list.innerHTML=propSlotData.map((p,i)=>`
+    <div class="prop-slot">
+      <div class="prop-slot-head">
+        <div class="prop-slot-num">${i+1}</div>
+        <span class="prop-slot-title">Propuesta #${i+1}</span>
+        ${p.nombre?`<span class="badge b-green prop-slot-badge">Completo</span>`:`<span class="badge b-gray prop-slot-badge">Pendiente</span>`}
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div><label class="flabel first">Nombre del restaurante</label><input type="text" id="ps-rest-${i}" value="${p.nombre}" placeholder="Ej: Asadero Don Rodrigo" oninput="updateSlot(${i},'nombre',this.value)"></div>
+        <div><label class="flabel first">Nombre del dueño / decisor</label><input type="text" id="ps-dec-${i}" value="${p.decisor}" placeholder="Nombre completo" oninput="updateSlot(${i},'decisor',this.value)"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div><label class="flabel first">Teléfono</label><input type="text" id="ps-tel-${i}" value="${p.telefono}" placeholder="300 000 0000" oninput="updateSlot(${i},'telefono',this.value)"></div>
+        <div><label class="flabel first">Etapa actual</label>
+          <select id="ps-etapa-${i}" onchange="updateSlot(${i},'etapa',this.value)">
+            <option value="1" ${p.etapa==='1'?'selected':''}>1 — Propuesta enviada · Pdt Interés</option>
+            <option value="2" ${p.etapa==='2'?'selected':''}>2 — Documentos · Docs parciales</option>
+            <option value="3" ${p.etapa==='3'?'selected':''}>3 — Esperando firma</option>
+            <option value="4" ${p.etapa==='4'?'selected':''}>4 — Contrato firmado · Pdt Menú</option>
+            <option value="5" ${p.etapa==='5'?'selected':''}>5 — R2S completo · HO entregado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div><label class="flabel first">Fecha de entrega de propuesta</label><input type="date" id="ps-fechaprop-${i}" value="${p.fechaPropuesta||today()}" oninput="updateSlot(${i},'fechaPropuesta',this.value)"></div>
+        <div><label class="flabel first">Fecha alerta próximo contacto</label><input type="date" id="ps-fecha-${i}" value="${p.fechaAlerta}" min="${today()}" max="${dAhead(10)}" oninput="validateFechaAlerta(this);updateSlot(${i},'fechaAlerta',this.value)"></div>
+      </div>
+      <label class="flabel first">Próxima acción / notas</label>
+      <textarea id="ps-notas-${i}" placeholder="Describe la próxima acción o cualquier nota relevante..." style="min-height:56px;margin-top:5px" oninput="updateSlot(${i},'notas',this.value)">${p.notas}</textarea>
+      <div class="form-row" style="margin-top:10px">
+        <div><label class="flabel first" style="font-size:11px">Tipo de restaurante</label>
+          <select id="ps-tipo-${i}" onchange="updateSlot(${i},'tipo',this.value)">
+            <option value="p0" ${p.tipo==='p0'?'selected':''}>P0</option>
+            <option value="p1" ${p.tipo==='p1'?'selected':''}>P1</option>
+            <option value="p2" ${(!p.tipo||p.tipo==='p2')?'selected':''}>P2+</option>
+          </select>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateSlot(i,field,val){
+  if(propSlotData[i]) propSlotData[i][field]=val;
+  // Update badge live
+  const slot=document.querySelectorAll('.prop-slot')[i];
+  if(slot){
+    const badge=slot.querySelector('.prop-slot-badge');
+    if(badge) badge.className=`badge prop-slot-badge ${propSlotData[i].nombre?'b-green':'b-gray'}`;
+    if(badge) badge.textContent=propSlotData[i].nombre?'Completo':'Pendiente';
+  }
+}
+function resetRegistro(){
+  tmpAvances=[];tmpR2S=[];avSelectedNombre='';r2sSelectedNombre='';
+  ['vis','prop'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='0';});
+  const bt=document.getElementById('bloqueo-txt');if(bt)bt.value='';
+  renderAvancesList();renderR2SList();
+}
+ 
+// ── REGISTRO INIT ──
+function initRegistro(){
+  const dl=document.getElementById('reg-date-label');
+  if(dl)dl.textContent=todayFmt();
+  // Siempre inicia en 0 — el hunter ingresa solo el incremento del momento
+  const ve=document.getElementById('vis');const pe=document.getElementById('prop');
+  if(ve)ve.textContent='0';
+  if(pe)pe.textContent='0';
+  propSlotData=[];
+  renderPropSlots();
+}
+ 
+// ── AVANCES ──
+function addAvanceRow(){
+  document.getElementById('avance-form').style.display='block';
+  document.getElementById('av-search').value='';avSelectedNombre='';
+  document.getElementById('av-etapa').value='';
+  document.getElementById('av-ac-list').classList.remove('open');
+}
+function cancelAvance(){document.getElementById('avance-form').style.display='none';}
+function filterAcAvance(q){
+  const pipe=gHD(cH).pipeline.filter(p=>parseInt(p.etapa||1)<6&&!tmpAvances.find(a=>a.nombre===p.nombre));
+  const filtered=q?pipe.filter(p=>p.nombre.toLowerCase().includes(q.toLowerCase())):pipe;
+  const list=document.getElementById('av-ac-list');
+  list.innerHTML=filtered.slice(0,8).map(p=>`<div class="ac-item" onclick="selectAvanceNombre('${p.nombre.replace(/'/g,"\\'")}','${p.etapa}')">${p.nombre} <span style="color:var(--muted);font-size:11px">· Etapa ${p.etapa}</span></div>`).join('');
+  list.classList.toggle('open',filtered.length>0&&q.length>0);
+}
+function selectAvanceNombre(nombre,etapaActual){
+  avSelectedNombre=nombre;
+  document.getElementById('av-search').value=nombre;
+  document.getElementById('av-ac-list').classList.remove('open');
+  // Pre-select next stage
+  const nextEtapa=Math.min(6,parseInt(etapaActual)+1);
+  document.getElementById('av-etapa').value=nextEtapa;
+}
+function confirmAvance(){
+  if(!avSelectedNombre){showToast('Selecciona un restaurante del pipeline','#E24B4A');return;}
+  const etapa=document.getElementById('av-etapa').value;
+  if(!etapa){showToast('Selecciona la nueva etapa','#E24B4A');return;}
+  if(tmpAvances.find(a=>a.nombre===avSelectedNombre)){showToast('Este restaurante ya fue agregado','#E24B4A');return;}
+  const pipe=gHD(cH).pipeline.find(p=>p.nombre===avSelectedNombre);
+  tmpAvances.push({nombre:avSelectedNombre,etapaAnterior:pipe?pipe.etapa:'?',etapaNueva:etapa});
+  document.getElementById('avance-form').style.display='none';
+  renderAvancesList();
+}
+function removeAvance(i){tmpAvances.splice(i,1);renderAvancesList();}
+function renderAvancesList(){
+  const el=document.getElementById('avances-list');
+  const emp=document.getElementById('avances-empty');
+  if(!tmpAvances.length){el.innerHTML='';emp.style.display='block';return;}
+  emp.style.display='none';
+  el.innerHTML=tmpAvances.map((a,i)=>`<div class="avance-item">
+    <span class="avance-item-name">${a.nombre}</span>
+    <span class="avance-item-stage">Etapa ${a.etapaAnterior} → ${a.etapaNueva}</span>
+    <button class="avance-item-del" onclick="removeAvance(${i})">×</button>
+  </div>`).join('');
+}
+ 
+// ── R2S ──
+function addR2SRow(){
+  document.getElementById('r2s-form').style.display='block';
+  document.getElementById('r2s-search').value='';r2sSelectedNombre='';
+  document.getElementById('r2s-ac-list').classList.remove('open');
+}
+function cancelR2S(){document.getElementById('r2s-form').style.display='none';}
+function filterAcR2S(q){
+  // Show pipeline items in etapa 5 or 6 or any that haven't been R2S'd yet
+  const pipe=gHD(cH).pipeline.filter(p=>!tmpR2S.find(r=>r===p.nombre));
+  const filtered=q?pipe.filter(p=>p.nombre.toLowerCase().includes(q.toLowerCase())):pipe;
+  const list=document.getElementById('r2s-ac-list');
+  list.innerHTML=filtered.slice(0,8).map(p=>`<div class="ac-item" onclick="selectR2SNombre('${p.nombre.replace(/'/g,"\\'")}') ">${p.nombre} <span style="color:var(--muted);font-size:11px">· Etapa ${p.etapa}</span></div>`).join('');
+  list.classList.toggle('open',filtered.length>0&&q.length>0);
+}
+function selectR2SNombre(nombre){
+  r2sSelectedNombre=nombre;
+  document.getElementById('r2s-search').value=nombre;
+  document.getElementById('r2s-ac-list').classList.remove('open');
+}
+function confirmR2S(){
+  if(!r2sSelectedNombre){showToast('Selecciona un restaurante del pipeline','#E24B4A');return;}
+  if(tmpR2S.includes(r2sSelectedNombre)){showToast('Este restaurante ya fue agregado','#E24B4A');return;}
+  tmpR2S.push(r2sSelectedNombre);
+  document.getElementById('r2s-form').style.display='none';
+  renderR2SList();
+}
+function removeR2S(i){tmpR2S.splice(i,1);renderR2SList();}
+function renderR2SList(){
+  const el=document.getElementById('r2s-list');
+  const emp=document.getElementById('r2s-empty');
+  if(!tmpR2S.length){el.innerHTML='';emp.style.display='block';return;}
+  emp.style.display='none';
+  el.innerHTML=tmpR2S.map((n,i)=>`<div class="r2s-item">
+    <span class="r2s-item-name">${n}</span>
+    <button class="r2s-item-del" onclick="removeR2S(${i})">×</button>
+  </div>`).join('');
+}
+ 
+// ── GUARDAR REGISTRO ──
+function guardarRegistro(){
+  const vis=parseInt(document.getElementById('vis').textContent)||0;
+  const prop=parseInt(document.getElementById('prop').textContent)||0;
+
+  const sinNombre=propSlotData.filter(p=>!p.nombre.trim());
+  if(sinNombre.length>0){
+    showToast(`Completa el nombre de todos los restaurantes antes de guardar`,'#E24B4A');return;
+  }
+
+  // Validar que TODOS los slots tengan nombre y teléfono
+  const sinDatos=propSlotData.find(p=>!p.nombre.trim()||!p.telefono.trim());
+  if(sinDatos){
+    showToast(`Completa nombre y teléfono de todos los restaurantes`,'#E24B4A');return;
+  }
+
+  // Validar que los slots con nombre no estén duplicados en el pipeline
+  const hd=gHD(cH);
+  const conNombre=propSlotData.filter(p=>p.nombre.trim());
+  const duplicados=conNombre.filter(p=>hd.pipeline.find(e=>e.nombre.toLowerCase()===p.nombre.toLowerCase().trim()));
+  if(duplicados.length){
+    showToast(`"${duplicados[0].nombre}" ya existe en tu pipeline`,'#E24B4A');return;
+  }
+
+  // Armar resumen para modal de confirmación
+  const body=document.getElementById('confirm-body');
+  let html=`<div style="font-size:13px;color:var(--muted);margin-bottom:16px">Revisa el resumen antes de confirmar:</div>`;
+  html+=`<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+    <div><span style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif;color:var(--dark)">${vis}</span><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Visitados</div></div>
+    <div><span style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif;color:var(--orange)">${prop}</span><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Propuestas</div></div>
+  </div>`;
+
+  if(conNombre.length){
+    html+=`<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--hint);margin-bottom:8px">Entrarán al pipeline (${conNombre.length})</div>`;
+    html+=conNombre.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--orange-lt);border:1px solid var(--orange-mid);border-radius:9px;margin-bottom:6px">
+      <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--orange-dk)">${p.nombre}</div>
+      <div style="font-size:11px;color:var(--orange-dk);opacity:.7">${p.decisor||'Sin dueño'} · ${p.telefono||'Sin teléfono'}</div></div>
+      <span class="badge b-orange" style="font-size:10px">Etapa 1</span>
+    </div>`).join('');
+  }
+
+  body.innerHTML=html;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function confirmarGuardar(){
+  const hd=gHD(cH);const t=today();
+  const vis=parseInt(document.getElementById('vis').textContent)||0;
+  const prop=parseInt(document.getElementById('prop').textContent)||0;
+
+  // Agregar restaurantes con nombre al pipeline
+  const conNombre=propSlotData.filter(p=>p.nombre.trim());
+  conNombre.forEach(p=>{
+    hd.pipeline.push({
+      nombre:p.nombre.trim(),
+      decisor:p.decisor,
+      telefono:p.telefono,
+      etapa:p.etapa||'1',
+      tipo:p.tipo||'p2',
+      tp:p.tp||false,
+      fechaPropuesta:p.fechaPropuesta||t,
+      fechaAlerta:p.fechaAlerta,
+      notas:p.notas,
+      backlog:'no',
+      hoEntregado:false,
+      hoFecha:''
+    });
+  });
+
+  // Sumar al registro existente del día, no sobreescribir
+  const ex=hd.daily.findIndex(d=>d.fecha===t);
+  if(ex>=0){
+    hd.daily[ex].vis=(hd.daily[ex].vis||0)+vis;
+    hd.daily[ex].prop=(hd.daily[ex].prop||0)+prop;
+  } else {
+    hd.daily.unshift({fecha:t,vis,prop,r2s:0,avances:[],r2sArr:[],bloqueos:''});
+  }
+  sHD(cH,hd);
+
+  document.getElementById('confirm-modal').classList.remove('open');
+  propSlotData=[];
+
+  // Resetear contadores a 0 para el siguiente registro del día
+  const ve=document.getElementById('vis');const pe=document.getElementById('prop');
+  if(ve)ve.textContent='0';if(pe)pe.textContent='0';
+  renderPropSlots();
+
+  const n=document.getElementById('reg-notify');
+  if(n){n.textContent=`✓ Registro sumado.${conNombre.length?' '+conNombre.length+' restaurante(s) agregado(s) al pipeline.':''}`;n.style.display='block';setTimeout(()=>n.style.display='none',5000);}
+  showToast('Registro guardado y sumado al día','#0F6E56');
+  renderInicio();renderPipe();
+}
+ 
+// ── PIPELINE ──
+function toggleAddModal(){
+  const m=document.getElementById('add-modal');m.classList.toggle('open');
+  if(m.classList.contains('open')){
+    document.getElementById('new-fecha-prop').value=today();
+    const fa=document.getElementById('new-fecha-accion');
+    fa.min=today();fa.max=dAhead(10);
+  }
+}
+function agregarRest(){
+  const nombre=document.getElementById('new-rest').value.trim();
+  if(!nombre){showToast('Escribe el nombre del restaurante','#E24B4A');return;}
+  const tel=document.getElementById('new-tel').value.replace(/\s/g,'');
+  if(tel&&(tel.length<10||tel.length>10||!/^\d+$/.test(tel))){showToast('El teléfono debe tener exactamente 10 dígitos','#E24B4A');return;}
+  const hd=gHD(cH);
+  hd.pipeline.push({
+    nombre,decisor:document.getElementById('new-dec').value,
+    telefono:document.getElementById('new-tel').value,
+    etapa:document.getElementById('new-etapa').value,
+    fechaPropuesta:document.getElementById('new-fecha-prop').value,
+    fechaAlerta:document.getElementById('new-fecha-accion').value,
+    notas:document.getElementById('new-notas').value,
+    tipo:document.getElementById('new-tipo').value||'p2',
+    backlog:'no',hoEntregado:false,hoFecha:''
+  });
+  sHD(cH,hd);
+  ['new-rest','new-dec','new-tel','new-notas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('new-etapa').value='1';
+  document.getElementById('new-tipo').value='p2';
+  document.getElementById('add-modal').classList.remove('open');
+  renderPipe();showToast('Restaurante agregado al pipeline','#0F6E56');
+}
+function validateFechaAlerta(input){
+  const t=today(),max=dAhead(10);
+  if(input.value>max){input.value=max;showToast('Máximo 10 días de anticipación para la alerta','#E24B4A');}
+  if(input.value<t){input.value=t;}
+}
+function validateFechaProp(input){
+  const t=today(),y=dAgo(1);
+  const err=document.getElementById('new-fecha-prop-err');
+  if(input.value>t||input.value<y){
+    input.value=t;
+    if(err)err.style.display='block';
+    setTimeout(()=>{if(err)err.style.display='none';},3000);
+  }
+}
+function toggleHOcheck(){
+  const chk=document.getElementById('em-ho-check');
+  const lbl=document.getElementById('em-ho-fecha-label');
+  const fechaWrap=document.getElementById('em-fecha-accion-wrap');
+  if(chk.checked){
+    lbl.textContent='Fecha: '+today();lbl.style.display='inline';
+    if(fechaWrap)fechaWrap.style.display='none';
+  } else {
+    lbl.style.display='none';
+    if(fechaWrap)fechaWrap.style.display='block';
+  }
+}
+ 
+function marcarHO(hid,idx){
+  const hd=gHD(hid);const p=hd.pipeline[idx];
+  p.hoEntregado=true;p.hoFecha=today();
+  sHD(hid,hd);renderPipe();renderInicio();
+  if(document.getElementById('h-mes').classList.contains('active'))renderMes();
+  showToast('HO entregado registrado ✓','#0F6E56');
+}
+function openEditModal(hid,idx){
+  const p=gHD(hid).pipeline[idx];editIdx={hid,idx};
+  document.getElementById('em-nombre').value=p.nombre||'';
+  document.getElementById('em-decisor').value=p.decisor||'';
+  document.getElementById('em-telefono').value=p.telefono||'';
+  document.getElementById('em-etapa').value=p.etapa||'1';
+  document.getElementById('em-fecha-prop').value=p.fechaPropuesta||'';
+  document.getElementById('em-fecha-accion').value=p.fechaAlerta||'';
+  document.getElementById('em-notas').value=p.notas||'';
+  document.getElementById('em-backlog').value=p.backlog||'no';
+  document.getElementById('em-tipo').value=p.tipo||'p2';
+  const hoSec=document.getElementById('em-ho-section');
+  const fechaWrap=document.getElementById('em-fecha-accion-wrap');
+  const isR2S=parseInt(p.etapa||1)>=5;
+  hoSec.style.display=isR2S?'block':'none';
+  if(fechaWrap)fechaWrap.style.display=(isR2S&&p.hoEntregado)?'none':'block';
+  if(isR2S){
+    const chk=document.getElementById('em-ho-check');
+    chk.checked=p.hoEntregado||false;
+    const lbl=document.getElementById('em-ho-fecha-label');
+    if(p.hoEntregado&&p.hoFecha){lbl.textContent='Fecha: '+p.hoFecha;lbl.style.display='inline';}
+    else lbl.style.display='none';
+    const daysR2S=daysSince(p.r2sFecha||p.fechaPropuesta);
+    const alertEl=document.getElementById('em-ho-alert');
+    if(!p.hoEntregado&&daysR2S>=4){
+      const remaining=Math.max(0,5-daysR2S);
+      alertEl.innerHTML=remaining<=0?'⚠ Plazo vencido — entrega el HO inmediatamente.':'⚠ Urgente — queda 1 día para entregar el HO. Vence mañana.';
+      alertEl.style.display='block';
+    } else alertEl.style.display='none';
+  }
+  const fa=document.getElementById('em-fecha-accion');
+  if(fa){fa.min=today();fa.max=dAhead(10);}
+  document.getElementById('edit-modal-title').textContent='Editar: '+p.nombre;
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');editIdx=null;}
+function saveEditModal(){
+  if(!editIdx)return;
+  const tel=document.getElementById('em-telefono').value.replace(/\s/g,'');
+  if(tel&&(tel.length!==10||!/^\d+$/.test(tel))){showToast('El teléfono debe tener exactamente 10 dígitos','#E24B4A');return;}
+  const hd=gHD(editIdx.hid);const p=hd.pipeline[editIdx.idx];
+  const isR2S=parseInt(document.getElementById('em-etapa').value||1)>=5;
+  const hoCheck=isR2S&&document.getElementById('em-ho-check').checked;
+  const hoFecha=hoCheck?(p.hoFecha||today()):p.hoFecha||'';
+  // Si marcó HO, quitar backlog automáticamente
+  const backlogRaw=document.getElementById('em-backlog').value;
+  // Backlog solo permitido en últimos 4 días del mes
+  if(backlogRaw==='si'&&!hoCheck){
+    const hoy=new Date(),diasMes=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).getDate();
+    if(hoy.getDate()<diasMes-3){showToast('Backlog solo se puede marcar en los últimos 4 días del mes','#D97706');return;}
+  }
+  const backlogVal=hoCheck?'no':backlogRaw;
+  hd.pipeline[editIdx.idx]={...p,nombre:document.getElementById('em-nombre').value,decisor:document.getElementById('em-decisor').value,telefono:document.getElementById('em-telefono').value,etapa:document.getElementById('em-etapa').value,fechaAlerta:document.getElementById('em-fecha-accion').value,notas:document.getElementById('em-notas').value,backlog:backlogVal,tipo:document.getElementById('em-tipo').value||'p2',hoEntregado:hoCheck,hoFecha};
+  sHD(editIdx.hid,hd);closeEditModal();renderPipe();renderInicio();
+  if(document.getElementById('h-mes').classList.contains('active'))renderMes();
+  showToast('Cambios guardados','#0F6E56');
+}
+function delRest(hid,idx){const hd=gHD(hid);hd.pipeline.splice(idx,1);sHD(hid,hd);renderPipe();}
+function filterP(f,btn){pF=f;document.querySelectorAll('#pipe-filters .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPipe();}
+ 
+// ── RENDER INICIO ──
+function renderInicio(){
+  const s=calcSt(cH),t=today();
+  const hn=hunterName(cH);
+  const pts=calcPuntos(cH);
+  const c=pCol(s.pct);
+
+  document.getElementById('h-eyebrow').textContent=hn+' · '+new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+  document.getElementById('h-hero-name').textContent=hn;
+  document.getElementById('h-hero-date').textContent=todayFmt();
+
+  // Hero: solo las dos barras — activaciones siempre, puntos si desbloqueado
+  document.getElementById('h-hero-progreso').innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Activaciones</span>
+        <span style="font-size:22px;font-weight:800;color:#fff;line-height:1">${s.ho}<span style="font-size:13px;font-weight:400;color:rgba(255,255,255,.5)"> / ${s.meta}</span></span>
+      </div>
+      <div style="background:rgba(255,255,255,.18);border-radius:6px;height:10px;overflow:hidden">
+        <div style="height:100%;border-radius:6px;width:${Math.min(s.pct*100,100)}%;background:${c};transition:width .4s"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:5px">${Math.round(s.pct*100)}% · ${s.meta-s.ho>0?s.meta-s.ho+' por cerrar':'¡Meta cumplida!'}</div>
+    </div>
+    ${pts.desbloqueado?`
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700;text-transform:uppercase;letter-spacing:.08em">🏆 Puntos</span>
+        <span style="font-size:22px;font-weight:800;color:#fff;line-height:1">${pts.puntos}<span style="font-size:13px;font-weight:400;color:rgba(255,255,255,.5)"> / ${pts.metaPuntos}</span></span>
+      </div>
+      <div style="background:rgba(255,255,255,.18);border-radius:6px;height:10px;overflow:hidden">
+        <div style="height:100%;border-radius:6px;width:${Math.min(pts.pct*100,100)}%;background:${pCol(pts.pct)};transition:width .4s"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:5px">${Math.round(pts.pct*100)}% · P0=2pts P1=1pt P2+=0</div>
+    </div>`:`
+    <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">🔒</span>
+      <div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:600">Puntos bloqueados</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Faltan ${s.meta-s.ho} activación${s.meta-s.ho!==1?'es':''} · al llegar: P0 x2, P1 x1</div>
+      </div>
+    </div>`}`;
+
+  // Cuadro de puntos — vaciar (ya está en el hero)
+  document.getElementById('h-puntos-card').innerHTML='';
+
+  // Alertas bloqueados
+  const blq=gHD(cH).pipeline.filter(p=>autoSt(p).label==='Bloqueado');
+  const ac=document.getElementById('h-alertas-hoy');
+  if(blq.length){
+    ac.innerHTML=`<div class="card" style="margin-bottom:14px;border-color:#DC2626">
+      <div class="card-head"><span class="card-head-title" style="color:#DC2626">⚠ Necesitan atención</span><span class="badge b-red">${blq.length}</span></div>
+      <div class="card-body">`+blq.map(p=>`
+        <div class="alert-row">
+          <div class="alert-dot" style="background:#DC2626"></div>
+          <div><div style="font-size:13px;font-weight:600">${p.nombre}</div>
+          <div style="font-size:12px;color:#DC2626;margin-top:2px">${daysSince(p.fechaAlerta||p.fechaPropuesta)}d sin contacto · etapa ${p.etapa}</div></div>
+        </div>`).join('')+'</div></div>';
+  } else ac.innerHTML='';
+
+  initRegistro();
+}
+ 
+// ── RENDER PIPELINE ──
+function renderPipe(){
+  const hd=gHD(cH);let items=[...hd.pipeline];
+  const counts={todos:items.length,cierre:items.filter(p=>parseInt(p.etapa||1)>=5).length,bloqueado:items.filter(p=>autoSt(p).label==='Bloqueado').length,backlog:items.filter(p=>p.backlog==='si'&&!p.hoEntregado).length};
+  document.getElementById('pipe-hero-count').textContent=`${items.length} restaurante${items.length!==1?'s':''} en gestión`;
+  document.querySelectorAll('#pipe-filters .tab').forEach((b,i)=>{
+    const keys=['todos','cierre','bloqueado','backlog'],labels=['Todos','En cierre','Bloqueados','Backlog'];
+    b.textContent=labels[i]+' ('+counts[keys[i]]+')';
+  });
+
+  // ── Resumen por etapas ──
+  const etapaDefs=[
+    {key:'1',label:'Propuesta enviada · Pdt Interés',color:'var(--orange)',bg:'var(--orange-lt)',border:'var(--orange-mid)'},
+    {key:'2',label:'Documentos · Docs parciales',color:'#7C3AED',bg:'#F5F3FF',border:'#DDD6FE'},
+    {key:'3',label:'Esperando firma',color:'#92400E',bg:'#FFFBEB',border:'#FCD34D'},
+    {key:'4',label:'Contrato firmado · Pdt Menú',color:'#065F46',bg:'#ECFDF5',border:'#6EE7B7'},
+    {key:'5',label:'R2S completo · HO entregado',color:'#1D9E75',bg:'#F0FDF4',border:'#BBF7D0'},
+  ];
+  const total=items.length||1;
+  const resumenEl=document.getElementById('pipe-etapas-resumen');
+  if(items.length===0){resumenEl.style.display='none';}
+  else{
+    resumenEl.style.display='block';
+    resumenEl.innerHTML=`
+      <div class="card-head"><span class="card-head-title">Distribución por etapa</span><span class="card-head-sub">${items.length} restaurantes en total</span></div>
+      <div class="card-body" style="padding:14px 20px">
+        ${etapaDefs.map(e=>{
+          const rests=items.filter(p=>p.etapa===e.key);
+          const n=rests.length;
+          if(n===0)return'';
+          const pct=Math.round((n/total)*100);
+          const uid='ep-'+e.key;
+          const listaHtml=rests.map(p=>{
+            const st=autoSt(p);
+            const ri=hd.pipeline.indexOf(p);
+            const esR2S=parseInt(p.etapa||1)>=5;
+            const dA=daysSince(p.fechaAlerta||p.fechaPropuesta);
+            const dAC=dA>3?'#DC2626':dA>2?'#D97706':'#059669';
+            return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;color:var(--dark)">${p.nombre}</div>
+                <div style="color:var(--muted);margin-top:1px">${p.decisor||'Sin dueño'} · ${p.telefono||'Sin teléfono'}</div>
+                ${!p.hoEntregado&&p.fechaAlerta
+                  ?`<div style="font-size:11px;color:${dAC};font-weight:600;margin-top:2px">📅 Próx: ${p.fechaAlerta}</div>`
+                  :''}
+              </div>
+              <span class="badge ${st.cls}" style="flex-shrink:0">${st.label}</span>
+              <select onchange="cambiarEtapaRapido(${ri},this.value)" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--dark);cursor:pointer">
+                <option value="1" ${p.etapa==='1'?'selected':''}>1 — Propuesta enviada · Pdt Interés</option>
+                <option value="2" ${p.etapa==='2'?'selected':''}>2 — Documentos · Docs parciales</option>
+                <option value="3" ${p.etapa==='3'?'selected':''}>3 — Esperando firma</option>
+                <option value="4" ${p.etapa==='4'?'selected':''}>4 — Contrato firmado · Pdt Menú</option>
+                <option value="5" ${p.etapa==='5'?'selected':''}>5 — R2S completo · HO entregado</option>
+              </select>
+              ${esR2S?(!p.hoEntregado
+                ?`<button class="btn-ho" onclick="marcarHO(${cH},${ri})" style="font-size:11px;padding:4px 12px">Marcar HO</button>`
+                :`<span class="btn-ho done" style="cursor:default;font-size:11px;padding:4px 12px">✓ HO ${p.hoFecha||''}</span>`)
+              :''}
+            </div>`;
+          }).join('');
+          return`<div style="border-bottom:1px solid var(--border)">
+            <div onclick="toggleEtapaDetalle('${uid}')" style="display:flex;align-items:center;gap:12px;padding:8px 0;cursor:pointer">
+              <div style="width:22px;height:22px;border-radius:50%;background:${e.bg};border:1px solid ${e.border};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-size:10px;font-weight:700;color:${e.color}">${e.key}</span>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:500;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:6px">
+                  ${e.label}
+                  <span id="${uid}-arrow" style="font-size:10px;color:var(--hint)">▾ ver</span>
+                </div>
+                <div class="pbar" style="height:6px"><div class="pbar-fill" style="width:${pct}%;background:${e.color}"></div></div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:${e.color};line-height:1">${n}</div>
+                <div style="font-size:10px;color:var(--hint)">${pct}%</div>
+              </div>
+            </div>
+            <div id="${uid}" style="display:none;margin:0 -20px;background:var(--surface2);border-top:1px solid var(--border)">${listaHtml}</div>
+          </div>`;
+        }).filter(Boolean).join('')}
+      </div>`;
+  }
+  if(pF==='cierre')items=items.filter(p=>parseInt(p.etapa||1)>=5);
+  else if(pF==='bloqueado')items=items.filter(p=>autoSt(p).label==='Bloqueado');
+  else if(pF==='backlog')items=items.filter(p=>p.backlog==='si'&&!p.hoEntregado);
+  // Ordenamiento
+  if(pSort==='etapa'){
+    items.sort((a,b)=>parseInt(b.etapa||1)-parseInt(a.etapa||1));
+  } else if(pSort==='fechaPropuesta'){
+    items.sort((a,b)=>(b.fechaPropuesta||'').localeCompare(a.fechaPropuesta||''));
+  } else if(pSort==='fechaAlerta'){
+    items.sort((a,b)=>{
+      // HO entregados siempre al final
+      if(a.hoEntregado&&!b.hoEntregado)return 1;
+      if(!a.hoEntregado&&b.hoEntregado)return -1;
+      const fa=a.fechaAlerta||'9999',fb=b.fechaAlerta||'9999';
+      return fa.localeCompare(fb);
+    });
+  }
+  if(!items.length){document.getElementById('pipe-list').innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--hint);font-size:13px">Sin restaurantes en esta categoría</div>';return;}
+  document.getElementById('pipe-list').innerHTML=items.map(p=>{
+    const ri=hd.pipeline.indexOf(p),e=parseInt(p.etapa||1),st=autoSt(p);
+    const d=daysSince(p.fechaAlerta||p.fechaPropuesta);
+    const dC=d>3?'#DC2626':d>2?'#D97706':'#059669';
+    const daysR2S=p.r2sFecha?daysSince(p.r2sFecha):p.etapa==='4'?daysSince(p.fechaPropuesta):0;
+    const hoUrgent=parseInt(p.etapa)>=5&&!p.hoEntregado&&daysR2S>=4;
+    const bars=Array.from({length:5},(_,i)=>{
+      let cls='st';
+      if(p.hoEntregado){
+        cls='st ho'; // todas verdes
+      } else if(e>=5){
+        cls='st cur'; // todas naranja sólido en cierre
+      } else if(st.label==='Bloqueado'){
+        if(i<e-1)cls='st done';
+        else if(i===e-1)cls='st bloc';
+      } else {
+        if(i<e-1)cls='st done';
+        else if(i===e-1)cls='st cur';
+      }
+      return`<div class="${cls}"></div>`;
+    }).join('');
+    const hoBtn=parseInt(p.etapa)>=5
+      ?(!p.hoEntregado
+        ?`<button class="btn-ho" onclick="openEditModal(${cH},${ri})">Marcar HO entregado</button>`
+        :`<span class="btn-ho done" style="cursor:default">✓ HO entregado · ${p.hoFecha||''}</span>`)
+      :'';    const backlogTag=p.backlog==='si'&&!p.hoEntregado?`<span class="badge b-orange" style="font-size:10px">Backlog</span>`:'';
+    const tipoTag=p.tipo?`<span class="badge b-gray" style="font-size:10px">${p.tipo.toUpperCase()}</span>`:'';
+    const tpTag=p.tp?`<span class="badge b-orange" style="font-size:10px">TP</span>`:'';
+    const hoAlert=hoUrgent?`<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:7px;padding:7px 11px;font-size:11px;color:#7F1D1D;margin-top:6px">⚠ ${daysR2S>=5?'Plazo vencido — entrega el HO hoy.':'Urgente — queda 1 día para entregar el HO.'}</div>`:'';
+    return`<div class="pi">
+      <div class="pi-top"><span class="pi-name">${p.nombre} ${tipoTag} ${tpTag} ${backlogTag}</span><span class="badge ${st.cls}">${st.label}</span></div>
+      <div class="pi-sub">${p.decisor||'Sin dueño'} · ${p.telefono||'Sin teléfono'}</div>
+      <div class="stage-track">${bars}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="st-label" style="color:var(--orange-dk);font-weight:500">Etapa ${e} — ${STAGES[e]}</span>
+        ${p.hoEntregado
+          ?''
+          :p.fechaAlerta
+            ?`<span style="font-size:11px;color:${dC};font-weight:600">📅 Próx. contacto: ${p.fechaAlerta}</span>`
+            :p.fechaPropuesta
+              ?`<span style="font-size:11px;color:#DC2626;font-weight:600">⚠ Vencida desde: ${p.fechaPropuesta}</span>`
+              :`<span class="st-label" style="color:var(--hint)">Sin fecha de contacto</span>`}
+      </div>
+      ${p.notas?`<div class="pi-action-hint">→ ${p.notas.substring(0,80)}${p.notas.length>80?'…':''}</div>`:''}
+      ${p.fechaPropuesta?`<div style="font-size:10px;color:var(--hint);margin-top:4px">Propuesta entregada: ${p.fechaPropuesta}</div>`:''}
+      ${hoAlert}
+      <div class="pi-btns">
+        ${hoBtn}
+        <button class="btn-ghost" onclick="openEditModal(${cH},${ri})">Editar</button>
+        <button class="btn-del" onclick="delRest(${cH},${ri})">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+ 
+// ── DETALLE DE MÉTRICA ──
+function showMetricaDetalle(tipo){
+  const s=calcSt(cH);
+  const pipe=s.pipeData;
+  let titulo='',items=[];
+
+  if(tipo==='r2s'){
+    titulo='R2S cerrados — restaurantes en etapa 6';
+    items=pipe.filter(p=>parseInt(p.etapa||1)>=5);
+  } else if(tipo==='cumplimiento'){
+    titulo='Alcance de meta — HO entregados';
+    items=pipe.filter(p=>p.hoEntregado);
+  } else if(tipo==='ho'){
+    titulo='HO pendientes — R2S sin handoff entregado';
+    items=pipe.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado);
+  } else if(tipo==='backlog'){
+    titulo='Backlog — para el mes siguiente';
+    items=pipe.filter(p=>p.backlog==='si');
+  }
+
+  const body=document.getElementById('metrica-modal-body');
+  document.getElementById('metrica-modal-title').textContent=titulo;
+
+  if(!items.length){
+    body.innerHTML=`<div style="text-align:center;padding:24px;color:var(--hint);font-size:13px">Sin restaurantes en esta categoría</div>`;
+  } else {
+    body.innerHTML=items.map(p=>{
+      const st=autoSt(p);
+      const dA=daysSince(p.fechaAlerta||p.fechaPropuesta);
+      const dAC=dA>3?'#DC2626':dA>2?'#D97706':'#059669';
+      return`<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--dark)">${p.nombre}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${p.decisor||'Sin dueño'} · ${p.telefono||'Sin teléfono'}</div>
+          ${!p.hoEntregado&&p.fechaAlerta
+            ?`<div style="font-size:11px;color:${dAC};font-weight:600;margin-top:2px">📅 Próx: ${p.fechaAlerta}</div>`
+            :''}
+          ${p.notas?`<div style="font-size:11px;color:var(--hint);margin-top:2px">→ ${p.notas.substring(0,60)}${p.notas.length>60?'…':''}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <span class="badge ${st.cls}">${st.label}</span>
+          ${p.backlog==='si'&&!p.hoEntregado?`<div style="font-size:10px;color:#92400E;margin-top:4px">Backlog</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('metrica-modal').classList.add('open');
+}
+
+// ── RENDER MES ──
+function renderMes(){
+  const s=calcSt(cH),c=pCol(s.pct);
+  const pts=calcPuntos(cH);
+  const wks=wkR2S(cH);
+  document.getElementById('h-mes-hero').textContent=new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+
+  // Mismo patrón que Inicio: barras en el hero
+  document.getElementById('h-mes-progreso').innerHTML=`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Activaciones del mes</span>
+        <span style="font-size:22px;font-weight:800;color:#fff;line-height:1">${s.ho}<span style="font-size:13px;font-weight:400;color:rgba(255,255,255,.5)"> / ${s.meta}</span></span>
+      </div>
+      <div style="background:rgba(255,255,255,.18);border-radius:6px;height:10px;overflow:hidden">
+        <div style="height:100%;border-radius:6px;width:${Math.min(s.pct*100,100)}%;background:${c};transition:width .4s"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:5px">${Math.round(s.pct*100)}% · ${s.r2s} R2S · ${s.pipeData.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado).length} HO pendientes</div>
+    </div>
+    ${pts.desbloqueado?`
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700;text-transform:uppercase;letter-spacing:.08em">🏆 Puntos comisionales</span>
+        <span style="font-size:22px;font-weight:800;color:#fff;line-height:1">${pts.puntos}<span style="font-size:13px;font-weight:400;color:rgba(255,255,255,.5)"> / ${pts.metaPuntos}</span></span>
+      </div>
+      <div style="background:rgba(255,255,255,.18);border-radius:6px;height:10px;overflow:hidden">
+        <div style="height:100%;border-radius:6px;width:${Math.min(pts.pct*100,100)}%;background:${pCol(pts.pct)};transition:width .4s"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:5px">${Math.round(pts.pct*100)}% · P0=2pts P1=1pt P2+=0</div>
+    </div>`:`
+    <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">🔒</span>
+      <div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:600">Puntos bloqueados</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Faltan ${s.meta-s.ho} activación${s.meta-s.ho!==1?'es':''} · al llegar: P0 x2, P1 x1</div>
+      </div>
+    </div>`}`;
+
+  document.getElementById('h-mes-puntos').innerHTML='';
+
+  document.getElementById('h-semanas').innerHTML=['Semana 1','Semana 2','Semana 3','Semana 4'].map((w,i)=>{
+    const v=wks[i],p=Math.min(v/5,1),wc=p>=1?'#16A34A':p>=.6?'#D97706':'#DC2626';
+    return`<div class="week-row"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--muted)">${w}</span><span style="font-size:13px;font-weight:600;color:${wc}">${v} R2S</span></div><div class="pbar"><div class="pbar-fill" style="width:${p*100}%;background:${wc}"></div></div></div>`;
+  }).join('');
+  const hd=gHD(cH),m=monthStr(),me=hd.daily.filter(x=>x.fecha&&x.fecha.startsWith(m));
+  const tV=me.reduce((s,x)=>s+(x.vis||0),0);
+  const tPipe=s.pipe; // propuestas = pipeline total (fuente de verdad)
+  document.getElementById('h-embudo').innerHTML=[
+    ['#F5F3FF','#7C3AED','Visitados este mes',tV],
+    ['#FFF3EE','#C43D06','Propuestas en pipeline',tPipe],
+    ['#F0FDF4','#14532D','R2S cerrados',s.r2s],
+    ['#FFFBEB','#92400E','HO pendientes',s.pipeData.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado).length],
+  ].map(([bg,c2,l,v])=>`<div class="emb-row" style="background:${bg}"><span style="font-size:13px;color:${c2}">${l}</span><span style="font-size:18px;font-weight:800;color:${c2}">${v}</span></div>`).join('');
+  const rec=hd.daily.slice(0,10);
+  document.getElementById('h-historial').innerHTML=rec.length===0
+    ?'<div style="text-align:center;padding:20px;color:var(--hint);font-size:13px">Sin registros aún</div>'
+    :rec.map(d=>{
+      const esHoy=d.fecha===today();
+      return`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:600;color:var(--dark)">${d.fecha}${esHoy?' <span style="font-size:10px;background:var(--orange-lt);color:var(--orange-dk);padding:1px 7px;border-radius:10px;margin-left:4px">Hoy</span>':''}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;background:#F5F3FF;color:#7C3AED;padding:3px 10px;border-radius:20px">👁 ${d.vis||0} visitados</span>
+          ${(d.prop||0)>0?`<span style="font-size:11px;background:var(--orange-lt);color:var(--orange-dk);padding:3px 10px;border-radius:20px">📋 ${d.prop} propuestas</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+}
+ 
+// ── RENDER DASH ──
+function renderDash(){
+  document.getElementById('l-dash-date').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',month:'long',day:'numeric'});
+  const all=Array.from({length:7},(_,i)=>({...calcSt(i+1),id:i+1,name:hunterName(i+1),pts:calcPuntos(i+1)}));
+  const tBloq=all.reduce((s,x)=>s+x.bloq,0);
+  const noAct=all.filter(x=>!x.upd).length;
+  const tR2S=all.reduce((s,x)=>s+x.r2s,0);
+  const tHO=all.reduce((s,x)=>s+x.ho,0);
+  const tPipe=all.reduce((s,x)=>s+x.pipe,0);
+  const tBack=all.reduce((s,x)=>s+x.back,0);
+  const totalMeta=all.reduce((s,x)=>s+x.meta,0);
+  const pMes=totalMeta>0?tHO/totalMeta:0;
+  const tHoP=all.reduce((s,x)=>s+x.pipeData.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado).length,0);
+  const conPuntos=all.filter(x=>x.pts.desbloqueado).length;
+
+  // Hero: frase de contexto
+  document.getElementById('l-hero-stats').textContent=
+    `${Math.round(pMes*100)}% activaciones del equipo · ${tHO}/${totalMeta} · ${tR2S} R2S · ${tBloq} bloqueados${conPuntos>0?' · 🏆 '+conPuntos+' hunters con puntos':''}`;
+
+  // 4 números clave — sin repetir el ranking
+  document.getElementById('l-dash-metrics').innerHTML=`
+    <div class="mcard clickable" onclick="showLiderDetalle('ho')">
+      <div class="mcard-label">Activaciones ↗</div>
+      <div class="mcard-val" style="color:${pCol(pMes)}">${tHO}<span style="font-size:14px;font-weight:400;color:var(--hint)"> / ${totalMeta}</span></div>
+      <div class="mcard-sub">${Math.round(pMes*100)}% · solo P0+P1</div>
+    </div>
+    <div class="mcard clickable" onclick="showLiderDetalle('r2s')">
+      <div class="mcard-label">R2S cerrados ↗</div>
+      <div class="mcard-val" style="color:#7C3AED">${tR2S}</div>
+      <div class="mcard-sub">${tHoP} HO pendientes</div>
+    </div>
+    <div class="mcard clickable" onclick="showLiderDetalle('bloqueados')">
+      <div class="mcard-label">Bloqueados ↗</div>
+      <div class="mcard-val" style="color:${tBloq>0?'#DC2626':'#16A34A'}">${tBloq}</div>
+      <div class="mcard-sub">${tBack} en backlog</div>
+    </div>
+    <div class="mcard clickable" onclick="showLiderDetalle('sinact')">
+      <div class="mcard-label">Sin actualizar ↗</div>
+      <div class="mcard-val" style="color:${noAct>0?'#D97706':'#16A34A'}">${noAct}</div>
+      <div class="mcard-sub">de 7 hunters</div>
+    </div>`;
+  renderRanking();
+}
+ 
+function showLiderDetalle(tipo){
+  const all=Array.from({length:7},(_,i)=>({...calcSt(i+1),id:i+1,name:hunterName(i+1)}));
+  let titulo='',rows='';
+
+  if(tipo==='ho'){
+    titulo='HO entregados — alcance de meta por hunter';
+    rows=all.map(s=>{
+      const hoList=s.pipeData.filter(p=>p.hoEntregado);
+      return`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:${hoList.length?'8px':'0'}">
+          <div class="avatar" style="background:${AVC[s.id-1].bg};color:${AVC[s.id-1].c};width:28px;height:28px;font-size:10px">H${s.id}</div>
+          <span style="flex:1;font-size:13px;font-weight:500">${s.name}</span>
+          <span class="badge ${pBdg(s.pct)}">${s.ho} / ${s.meta} HO · ${Math.round(s.pct*100)}%</span>
+        </div>
+        ${hoList.map(p=>`<div style="font-size:11px;color:#065F46;padding:3px 0 3px 38px">✓ ${p.nombre} · ${p.hoFecha||''}</div>`).join('')}
+        ${!hoList.length?`<div style="font-size:11px;color:var(--hint);padding:3px 0 3px 38px">Sin HO entregados aún</div>`:''}
+      </div>`;
+    }).join('');
+
+  } else if(tipo==='hopdt'){
+    titulo='HO pendientes de entregar — R2S sin handoff';
+    rows=all.map(s=>{
+      const pdts=s.pipeData.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado);
+      if(!pdts.length)return'';
+      return`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="avatar" style="background:${AVC[s.id-1].bg};color:${AVC[s.id-1].c};width:28px;height:28px;font-size:10px">H${s.id}</div>
+          <span style="flex:1;font-size:13px;font-weight:500">${s.name}</span>
+          <span class="badge b-amber">${pdts.length} pendiente${pdts.length!==1?'s':''}</span>
+        </div>
+        ${pdts.map(p=>`<div style="font-size:11px;color:#92400E;padding:3px 0 3px 38px">⏳ ${p.nombre} · ${p.decisor||'Sin dueño'} · ${p.telefono||'Sin tel'}</div>`).join('')}
+      </div>`;
+    }).filter(Boolean).join('') || '<div style="text-align:center;padding:20px;color:var(--hint);font-size:13px">Sin HO pendientes ✓</div>';
+
+  } else if(tipo==='r2s'){
+    titulo='R2S cerrados — restaurantes en etapa 6 por hunter';
+    rows=all.map(s=>{
+      const r2sList=s.pipeData.filter(p=>parseInt(p.etapa||1)>=5);
+      return`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:${r2sList.length?'8px':'0'}">
+          <div class="avatar" style="background:${AVC[s.id-1].bg};color:${AVC[s.id-1].c};width:28px;height:28px;font-size:10px">H${s.id}</div>
+          <span style="flex:1;font-size:13px;font-weight:500">${s.name}</span>
+          <span class="badge b-purple">${r2sList.length} R2S</span>
+        </div>
+        ${r2sList.map(p=>`<div style="font-size:11px;color:#7C3AED;padding:3px 0 3px 38px">${p.nombre} ${p.hoEntregado?'· <span style="color:#1D9E75">✓ HO</span>':'· HO pendiente'}</div>`).join('')}
+        ${!r2sList.length?`<div style="font-size:11px;color:var(--hint);padding:3px 0 3px 38px">Sin R2S aún</div>`:''}
+      </div>`;
+    }).join('');
+
+  } else if(tipo==='bloqueados'){
+    titulo='Bloqueados — restaurantes que requieren acción';
+    rows=all.map(s=>{
+      const bloq=s.pipeData.filter(p=>autoSt(p).label==='Bloqueado');
+      if(!bloq.length)return'';
+      return`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="avatar" style="background:${AVC[s.id-1].bg};color:${AVC[s.id-1].c};width:28px;height:28px;font-size:10px">H${s.id}</div>
+          <span style="flex:1;font-size:13px;font-weight:600">${s.name}</span>
+          <span class="badge b-red">${bloq.length} bloqueados</span>
+        </div>
+        ${bloq.map(p=>{
+          const fecha=p.fechaAlerta||p.fechaPropuesta;
+          const dc=daysSince(fecha);
+          const fechaLabel=p.fechaAlerta
+            ?`📅 Vencida: ${p.fechaAlerta}`
+            :p.fechaPropuesta
+              ?`⚠ Vencida desde: ${p.fechaPropuesta}`:'Sin fecha';
+          return`<div style="padding:6px 0 6px 38px;border-bottom:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600;color:#7F1D1D">${p.nombre} <span class="badge b-gray" style="font-size:9px">${(p.tipo||'p2').toUpperCase()}</span></div>
+            <div style="font-size:11px;color:#DC2626;margin-top:2px">${fechaLabel} · ${dc}d sin contacto</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px">${p.decisor||'—'} · ${p.telefono||'—'}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).filter(Boolean).join('') || '<div style="text-align:center;padding:20px;color:var(--hint);font-size:13px">Sin bloqueados — ¡bien!</div>';
+
+  } else if(tipo==='sinact'){
+    titulo='Sin actualizar hoy — hunters que no registraron';
+    const sinAct=all.filter(s=>!s.upd);
+    rows=sinAct.length===0
+      ?'<div style="text-align:center;padding:20px;color:var(--hint);font-size:13px">Todos actualizaron hoy ✓</div>'
+      :sinAct.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)">
+        <div class="avatar" style="background:${AVC[s.id-1].bg};color:${AVC[s.id-1].c};width:28px;height:28px;font-size:10px">H${s.id}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500">${s.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${s.ho} HO · ${s.r2s} R2S · ${s.pipe} en pipeline</div></div>
+        <span class="badge b-red">Sin registro</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('metrica-modal-title').textContent=titulo;
+  document.getElementById('metrica-modal-body').innerHTML=rows;
+  document.getElementById('metrica-modal').classList.add('open');
+}
+
+// ── RENDER RANKING (fusionado con Estado por hunter) ──
+function renderRanking(){
+  const all=Array.from({length:7},(_,i)=>({...calcSt(i+1),id:i+1,name:hunterName(i+1),pts:calcPuntos(i+1)}));
+  all.sort((a,b)=>b.ho-a.ho||b.r2s-a.r2s);
+  const rk=['r1','r2','r3','','','',''];
+  const etapaDefs=[
+    {key:'1',label:'Propuesta enviada · Pdt Interés',color:'var(--orange)',bg:'var(--orange-lt)',border:'var(--orange-mid)'},
+    {key:'2',label:'Documentos · Docs parciales',color:'#7C3AED',bg:'#F5F3FF',border:'#DDD6FE'},
+    {key:'3',label:'Esperando firma',color:'#92400E',bg:'#FFFBEB',border:'#FCD34D'},
+    {key:'4',label:'Contrato firmado · Pdt Menú',color:'#065F46',bg:'#ECFDF5',border:'#6EE7B7'},
+    {key:'5',label:'R2S completo · HO entregado',color:'#16A34A',bg:'#F0FDF4',border:'#BBF7D0'},
+  ];
+  document.getElementById('ranking-rows').innerHTML=all.map((s,i)=>{
+    const av=AVC[s.id-1],c=pCol(s.pct),dc=s.pct>=.9?'#16A34A':s.pct>=.6?'#D97706':'#DC2626';
+    const pipe=gHD(s.id).pipeline;
+    const hoRk=pipe.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado).length;
+    const total=pipe.length||1;
+    const distrib=etapaDefs.map(e=>{
+      const rests=pipe.filter(p=>p.etapa===e.key);
+      if(!rests.length)return'';
+      const n=rests.length,pct=Math.round((n/total)*100);
+      const uid=`rk-${s.id}-${e.key}`;
+      const listaHtml=rests.map(p=>{
+        const st=autoSt(p);
+        const ri=pipe.indexOf(p);
+        const esR2S=parseInt(p.etapa||1)>=5;
+        const tipoTag=p.tipo?`<span class="badge b-gray" style="font-size:9px">${p.tipo.toUpperCase()}</span>`:'';
+        const dR=daysSince(p.fechaAlerta||p.fechaPropuesta);
+        const dRC=dR>3?'#DC2626':dR>2?'#D97706':'#059669';
+        return`<div style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;display:flex;align-items:center;gap:6px">${p.nombre} ${tipoTag}</div>
+            <div style="color:var(--muted);margin-top:1px">${p.decisor||'—'} · ${p.telefono||'—'}</div>
+            ${!p.hoEntregado&&p.fechaAlerta
+              ?`<div style="font-size:11px;color:${dRC};font-weight:600;margin-top:2px">📅 Próx: ${p.fechaAlerta}</div>`
+              :!p.hoEntregado&&p.fechaPropuesta&&st.label==='Bloqueado'
+                ?`<div style="font-size:11px;color:#DC2626;font-weight:600;margin-top:2px">⚠ Vencida desde: ${p.fechaPropuesta}</div>`
+                :''}
+          </div>
+          <span class="badge ${st.cls}">${st.label}</span>
+          <select onchange="cambiarEtapaLider(${s.id},${ri},this.value)" style="font-size:11px;padding:4px 8px;border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--dark)">
+            <option value="1" ${p.etapa==='1'?'selected':''}>1 — Propuesta enviada · Pdt Interés</option>
+            <option value="2" ${p.etapa==='2'?'selected':''}>2 — Documentos · Docs parciales</option>
+            <option value="3" ${p.etapa==='3'?'selected':''}>3 — Esperando firma</option>
+            <option value="4" ${p.etapa==='4'?'selected':''}>4 — Contrato firmado · Pdt Menú</option>
+            <option value="5" ${p.etapa==='5'?'selected':''}>5 — R2S completo · HO entregado</option>
+          </select>
+          <select onchange="cambiarTipoLider(${s.id},${ri},this.value)" style="font-size:11px;padding:4px 8px;border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--dark)">
+            <option value="p0" ${p.tipo==='p0'?'selected':''}>P0</option>
+            <option value="p1" ${p.tipo==='p1'?'selected':''}>P1</option>
+            <option value="p2" ${(!p.tipo||p.tipo==='p2')?'selected':''}>P2+</option>
+          </select>
+          ${esR2S?(!p.hoEntregado
+            ?`<button class="btn-ho" onclick="marcarHO(${s.id},${ri})" style="font-size:11px;padding:4px 12px">Marcar HO</button>`
+            :`<span class="btn-ho done" style="cursor:default;font-size:11px;padding:4px 12px">✓ HO ${p.hoFecha||''}</span>`):''}
+        </div>`;
+      }).join('');
+      return`<div style="border-bottom:1px solid var(--border)">
+        <div onclick="toggleEtapaLider('${uid}')" style="display:flex;align-items:center;gap:10px;padding:7px 16px;cursor:pointer">
+          <div style="width:18px;height:18px;border-radius:50%;background:${e.bg};border:1px solid ${e.border};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:9px;font-weight:700;color:${e.color}">${e.key}</span></div>
+          <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:var(--dark);margin-bottom:3px;display:flex;align-items:center;gap:6px">${e.label}<span id="${uid}-arrow" style="font-size:10px;color:var(--hint)">▾</span></div>
+          <div class="pbar" style="height:4px"><div class="pbar-fill" style="width:${pct}%;background:${e.color}"></div></div></div>
+          <span style="font-size:14px;font-weight:800;color:${e.color}">${n}</span>
+        </div>
+        <div id="${uid}" style="display:none;background:var(--surface2)">${listaHtml}</div>
+      </div>`;
+    }).filter(Boolean).join('');
+    const pipeContent=pipe.length===0
+      ?'<div style="padding:12px 20px;font-size:12px;color:var(--hint)">Sin restaurantes en pipeline</div>'
+      :distrib;
+    const ptsBar=s.pts.desbloqueado
+      ?`<div class="mini-bar" style="margin-top:3px"><div class="mini-bar-fill" style="width:${Math.min(s.pts.pct*100,100)}%;background:${pCol(s.pts.pct)}"></div></div>`:'';
+    return`<div style="margin-bottom:2px">
+      <div class="rank-row${i===0?' gold':''}" style="cursor:pointer" onclick="toggleHunterPipe('rk-pipe-${s.id}',this)">
+        <span class="rank-num ${rk[i]||''}">${i+1}</span>
+        <div class="status-dot" style="background:${dc}"></div>
+        <div class="avatar" style="background:${av.bg};color:${av.c};width:30px;height:30px;font-size:11px">H${s.id}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:6px">${s.name}<span style="font-size:10px;color:var(--hint)">▾</span>${!s.upd?'<span class="badge b-red" style="font-size:9px">Sin reg.</span>':''}${s.pts.desbloqueado?'<span class="badge b-orange" style="font-size:9px">🏆</span>':''}</div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:${Math.min(s.pct*100,100)}%;background:${c}"></div></div>
+          ${ptsBar}
+        </div>
+        <span style="width:50px;text-align:center;font-size:16px;font-weight:800;color:#7C3AED">${s.r2s}</span>
+        <span style="width:60px;text-align:center;font-size:16px;font-weight:800;color:${hoRk>0?'#D97706':'#16A34A'}">${hoRk}</span>
+        <span style="width:56px;text-align:center;font-size:13px;color:#14532D;font-weight:${s.back?600:400}">${s.back||'—'}</span>
+        <span class="badge ${pBdg(s.pct)}" style="width:64px;justify-content:center">${pLbl(s.pct)}</span>
+      </div>
+      <div id="rk-pipe-${s.id}" style="display:none;background:var(--surface2);border-top:1px solid var(--border)">${pipeContent}</div>
+    </div>`;
+  }).join('');
+}
+ 
+// ── RENDER ALERTAS ──
+function renderAlertas(){
+  const all=Array.from({length:7},(_,i)=>({...calcSt(i+1),id:i+1,name:hunterName(i+1),pts:calcPuntos(i+1)}));
+  const rojos=all.filter(s=>s.pct<.6),amarillos=all.filter(s=>s.pct>=.6&&s.pct<.9),verdes=all.filter(s=>s.pct>=.9);
+  function aRow(s,c,fn){
+    const ptsInfo=s.pts.desbloqueado?` · 🏆 ${s.pts.puntos}/${s.pts.metaPuntos} pts`:'';
+    const bloqDetalle=s.bloq>0?s.pipeData.filter(p=>autoSt(p).label==='Bloqueado').map(p=>{
+      const fecha=p.fechaAlerta||p.fechaPropuesta;
+      const dc=daysSince(fecha);
+      return`<div style="font-size:11px;color:#DC2626;padding:2px 0 2px 12px">⚠ ${p.nombre} · ${dc}d sin contacto${fecha?' · vencida '+fecha:''}</div>`;
+    }).join(''):'';
+    return`<div class="alert-row"><div class="alert-dot" style="background:${c}"></div><div style="flex:1">
+      <div style="font-size:13px;font-weight:600">${s.name} — ${Math.round(s.pct*100)}% activaciones${ptsInfo}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">${s.ho} activaciones (P0+P1) · ${s.r2s} R2S · ${s.bloq} bloqueados · ${s.upd?'actualizó hoy':'NO actualizó hoy'}</div>
+      ${bloqDetalle}
+      <div style="font-size:12px;margin-top:3px;color:${c}">${fn(s)}</div>
+    </div></div>`;
+  }
+  const dr=s=>s.bloq>=4?`${s.bloq} bloqueados — ir a campo esta semana`:`${s.ho} de ${s.meta} activaciones · diagnóstico urgente`;
+  const da=s=>`Monitoreo activo — ${s.ho}/${s.meta} activaciones · ${s.r2s} R2S · ${s.bloq} bloqueados`;
+  const dv=s=>`En buen ritmo — ${s.ho}/${s.meta} activaciones · ${s.back} backlog asegurado`;
+  const rv=document.getElementById('l-alertas-rojo');rv.style.display=rojos.length?'block':'none';
+  document.getElementById('l-alertas-rojo-list').innerHTML=rojos.map(s=>aRow(s,'#DC2626',dr)).join('');
+  const av=document.getElementById('l-alertas-amarillo');av.style.display=amarillos.length?'block':'none';
+  document.getElementById('l-alertas-amarillo-list').innerHTML=amarillos.map(s=>aRow(s,'#D97706',da)).join('');
+  const vv=document.getElementById('l-alertas-verde');vv.style.display=verdes.length?'block':'none';
+  document.getElementById('l-alertas-verde-list').innerHTML=verdes.map(s=>aRow(s,'#16A34A',dv)).join('');
+  const hoP=all.reduce((s,x)=>s+x.pipeData.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado).length,0);
+  document.getElementById('l-ho-proyeccion').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--muted)">R2S sin HO entregado (etapa 6)</span><span style="font-size:18px;font-weight:800;color:#16A34A">${hoP}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="font-size:13px;color:var(--muted)">Handoffs pendientes de comunicar a posventa</span><span class="badge b-green">~${hoP} HOs</span></div>`;
+}
+ 
+// ── VER HUNTER (con pipeline completo + export) ──
+function verHunter(v){
+  const det=document.getElementById('hunter-detail');
+  if(!v){det.innerHTML='';return;}
+  const id=parseInt(v),s=calcSt(id),c=pCol(s.pct),pts=calcPuntos(id);
+  const hoP=s.pipeData.filter(p=>parseInt(p.etapa||1)>=5&&!p.hoEntregado).length;
+  const propCount=(getPropuestas()[id-1]||0);
+  let diagBg,diagC,diag,accion;
+  if(s.pct>=.9){diagBg='#F0FDF4';diagC='#14532D';diag=`Hunter en buen ritmo. ${s.ho} activaciones (P0+P1) de ${s.meta}. ${s.bloq} bloqueado(s). Backlog de ${s.back} asegurado.`;accion='Sin intervención urgente. Verificar bloqueados antes del viernes.';}
+  else if(s.pct>=.6){diagBg='#FFFBEB';diagC='#92400E';diag=`Alerta amarilla. ${s.ho} activaciones de ${s.meta}. ${s.r2s} R2S cerrados. ${s.bloq} bloqueados. ${hoP} HO pendientes.`;accion='Revisar bloqueados el lunes. Si no mejora, agendar 1:1 el jueves.';}
+  else{diagBg='#FEF2F2';diagC='#7F1D1D';diag=`ROJO. ${s.ho} activaciones de ${s.meta}. ${s.bloq} bloqueados. ${hoP} R2S sin HO. ${s.upd?'Actualizó hoy.':'No actualizó hoy.'}`;accion='Llamada hoy. Diagnóstico urgente: actividad, pitch o motivación. Ir a campo esta semana.';}
+  const pipe=gHD(id).pipeline;
+  const ptsCard=pts.desbloqueado
+    ?`<div class="card" style="border:2px solid var(--orange)">
+        <div class="card-head"><span class="card-head-title" style="color:var(--orange)">🏆 Puntos comisionales</span><span class="badge b-orange">${Math.round(pts.pct*100)}%</span></div>
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:13px;color:var(--muted)">${pts.puntos} de ${pts.metaPuntos} puntos</span>
+            <span style="font-size:13px;font-weight:700;color:${pCol(pts.pct)}">${pts.metaPuntos-pts.puntos} por llegar</span>
+          </div>
+          <div class="pbar" style="height:8px"><div class="pbar-fill" style="width:${Math.min(pts.pct*100,100)}%;background:${pCol(pts.pct)}"></div></div>
+          <div style="font-size:11px;color:var(--hint);margin-top:8px">P0 = 2 pts · P1 = 1 pt · P2+ = 0 pts</div>
+        </div>
+      </div>`
+    :`<div class="card" style="border:1.5px dashed var(--border)">
+        <div class="card-body" style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px">🔒</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--dark)">Puntos bloqueados</div>
+          <div style="font-size:12px;color:var(--hint);margin-top:3px">Faltan ${s.meta-s.ho} activaciones para desbloquear. P0 x2 pts · P1 x1 pt</div></div>
+        </div>
+      </div>`;
+  det.innerHTML=`
+    <div class="mgrid">
+      <div class="mcard"><div class="mcard-label">R2S cerrados</div><div class="mcard-val" style="color:#7C3AED">${s.r2s}</div><div class="mcard-sub">en etapa 6</div></div>
+      <div class="mcard"><div class="mcard-label">HO pendientes</div><div class="mcard-val" style="color:${hoP>0?'#D97706':'#16A34A'}">${hoP}</div><div class="mcard-sub">sin handoff</div></div>
+      <div class="mcard"><div class="mcard-label">Bloqueados</div><div class="mcard-val" style="color:${s.bloq>=4?'#DC2626':s.bloq>=2?'#D97706':'#16A34A'}">${s.bloq}</div><div class="mcard-sub">en pipeline</div></div>
+      <div class="mcard clickable" style="border-color:var(--orange)" onclick="mostrarDetallePropuestas(${id})"><div class="mcard-label" style="color:var(--orange)">📋 Propuestas ↗</div><div class="mcard-val" style="color:var(--orange)">${propCount}</div><div class="mcard-sub">desde pág. principal</div></div>
+    </div>
+    ${ptsCard}
+    <div class="card"><div class="card-head"><span class="card-head-title">Diagnóstico</span></div>
+      <div class="card-body"><div class="diag" style="background:${diagBg};color:${diagC}">${diag}</div>
+      <div class="diag" style="background:#F5F3FF;color:#7C3AED">${accion}</div></div>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <div class="card-head">
+        <span class="card-head-title">Pipeline completo · ${pipe.length} restaurantes</span>
+        <button class="btn-export" onclick="exportCSV(${id})">⬇ Descargar CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="pipe-table">
+          <thead><tr>
+            <th>Restaurante</th><th>Tipo</th><th>Etapa</th><th>Fecha propuesta</th>
+            <th>Dueño</th><th>Teléfono</th><th>Próx. contacto</th><th>Notas</th><th>Estado</th><th>HO</th>
+          </tr></thead>
+          <tbody>${pipe.length===0?'<tr><td colspan="10" style="text-align:center;color:var(--hint);padding:24px">Sin restaurantes en pipeline</td></tr>':pipe.map(p=>{
+            const st=autoSt(p);
+            const tipoBdg=p.tipo==='p0'?'b-orange':p.tipo==='p1'?'b-green':'b-gray';
+            const dT=daysSince(p.fechaAlerta||p.fechaPropuesta);
+            const dTC=dT>3?'#DC2626':dT>2?'#D97706':'#059669';
+            return`<tr>
+              <td style="font-weight:600;white-space:nowrap">${p.nombre}</td>
+              <td><span class="badge ${tipoBdg}" style="font-size:10px">${(p.tipo||'p2').toUpperCase()}</span></td>
+              <td><span class="badge b-purple" style="font-size:10px">${STAGES[parseInt(p.etapa||1)]}</span></td>
+              <td style="white-space:nowrap;font-size:11px">${p.fechaPropuesta||'—'}</td>
+              <td style="font-size:12px">${p.decisor||'—'}</td>
+              <td style="font-size:12px;white-space:nowrap">${p.telefono||'—'}</td>
+              <td style="white-space:nowrap;font-size:11px;color:${dTC};font-weight:600">${p.hoEntregado?'—':p.fechaAlerta||'—'}</td>
+              <td style="max-width:180px;font-size:11px;color:var(--muted)">${p.notas?p.notas.substring(0,60)+(p.notas.length>60?'…':''):'—'}</td>
+              <td><span class="badge ${st.cls}">${st.label}</span></td>
+              <td style="text-align:center">${p.hoEntregado?'<span class="badge b-green">✓ '+p.hoFecha+'</span>':'—'}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+ 
+// ── EXPORT CSV ──
+function exportCSV(hid){
+  const pipe=gHD(hid).pipeline;
+  const rows=[['Restaurante','Etapa','Fecha propuesta','Dueño/Decisor','Teléfono','Alerta próximo contacto','Notas','Estado','HO entregado','Fecha HO']];
+  pipe.forEach(p=>{
+    rows.push([p.nombre||'',p.etapa||'',p.fechaPropuesta||'',p.decisor||'',p.telefono||'',p.fechaAlerta||'',p.notas||'',autoSt(p).label,p.hoEntregado?'Sí':'No',p.hoFecha||'']);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`pipeline_${hunterName(hid).replace(' ','_')}_${today()}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV descargado','#0F6E56');
+}
+ 
+// ── DEMO DATA ──
+function loadDemoData(){
+  // Limpiar datos anteriores primero para garantizar tipos correctos
+  for(let i=1;i<=7;i++)localStorage.removeItem('ht_'+i);
+  sHD(1,{daily:[{fecha:dAgo(0),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(1),vis:22,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(2),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(3),vis:18,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(4),vis:21,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(7),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(8),vis:19,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(9),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(10),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(11),vis:18,prop:0,r2s:1,avances:[],r2sArr:[],bloqueos:''}],
+    pipeline:[
+      {nombre:'Taquería El Gordo',decisor:'Carlos Pérez',telefono:'300 123 4567',etapa:'2',fechaPropuesta:dAgo(12),fechaAlerta:dAhead(1),notas:'Llamar para confirmar documentos del RUT',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Pizzería Roma',decisor:'Ana Gómez',telefono:'301 456 7890',etapa:'2',fechaPropuesta:dAgo(10),fechaAlerta:'',notas:'',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'La Brasa',decisor:'Pedro Ruiz',telefono:'302 789 0123',etapa:'4',fechaPropuesta:dAgo(20),fechaAlerta:dAhead(2),notas:'Enviar menú digital antes del jueves',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Burger Los Alpes',decisor:'Marta López',telefono:'303 456 7890',etapa:'5',fechaPropuesta:dAgo(25),fechaAlerta:dAhead(1),notas:'HO a posventa esta semana',backlog:'si',tipo:'p0',hoEntregado:true,hoFecha:dAgo(1)},
+      {nombre:'Wok Express',decisor:'Lin Chang',telefono:'304 111 2233',etapa:'5',fechaPropuesta:dAgo(15),fechaAlerta:dAhead(2),notas:'Revisión firma de contrato pendiente',backlog:'no',tipo:'p1',hoEntregado:true,hoFecha:dAgo(2)},
+      {nombre:'Asadero Los Pinos',decisor:'Jorge Cano',telefono:'306 333 4455',etapa:'1',fechaPropuesta:dAgo(2),fechaAlerta:dAhead(3),notas:'Primera propuesta entregada, pendiente respuesta',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'El Árabe',decisor:'Ramón Said',telefono:'308 555 6677',etapa:'2',fechaPropuesta:dAgo(8),fechaAlerta:dAhead(1),notas:'Recibir documentos pendientes del propietario',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Poke House',decisor:'Andrea Kim',telefono:'309 666 7788',etapa:'5',fechaPropuesta:dAgo(28),fechaAlerta:dAhead(5),notas:'R2S semana 4 — HO primera semana del mes siguiente',backlog:'si',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'Sushi Nikkei',decisor:'Kenji Tanaka',telefono:'305 222 3344',etapa:'5',fechaPropuesta:dAgo(5),fechaAlerta:dAhead(1),notas:'HO pendiente',backlog:'no',tipo:'p1',hoEntregado:true,hoFecha:dAgo(0)},
+    ]});
+  sHD(2,{daily:[{fecha:dAgo(0),vis:20,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(1),vis:18,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(2),vis:15,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(3),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(4),vis:19,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(7),vis:20,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(8),vis:20,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(9),vis:17,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(10),vis:20,prop:0,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(11),vis:18,prop:0,r2s:1,avances:[],r2sArr:[],bloqueos:''}],
+    pipeline:[
+      {nombre:'Fonda Antioqueña',decisor:'Gloria Ríos',telefono:'310 100 2000',etapa:'3',fechaPropuesta:dAgo(18),fechaAlerta:dAhead(2),notas:'Revisar firma contrato con el dueño',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Hot Wings Express',decisor:'Tomás Herrera',telefono:'311 200 3000',etapa:'5',fechaPropuesta:dAgo(20),fechaAlerta:dAhead(1),notas:'Subir menú al sistema — esperar aprobación',backlog:'no',tipo:'p0',hoEntregado:true,hoFecha:dAgo(1)},
+      {nombre:'Donde Memo',decisor:'Guillermo Paz',telefono:'312 300 4000',etapa:'2',fechaPropuesta:dAgo(9),fechaAlerta:'',notas:'',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'La Italiana',decisor:'Marco Rossi',telefono:'313 400 5000',etapa:'2',fechaPropuesta:dAgo(11),fechaAlerta:'',notas:'',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'Arepas del Norte',decisor:'Carmenza Suárez',telefono:'314 500 6000',etapa:'2',fechaPropuesta:dAgo(13),fechaAlerta:dAhead(2),notas:'Completar RUT y cámara y comercio',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Tamal House',decisor:'Ernesto Mora',telefono:'315 600 7000',etapa:'5',fechaPropuesta:dAgo(27),fechaAlerta:dAhead(6),notas:'Backlog aprobado — HO primera semana',backlog:'si',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'Sandwich Bros',decisor:'Felipe Castro',telefono:'317 800 9000',etapa:'4',fechaPropuesta:dAgo(16),fechaAlerta:dAhead(3),notas:'Activación pendiente revisión técnica',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Sazón Costeño',decisor:'Paola Orozco',telefono:'316 700 8000',etapa:'1',fechaPropuesta:dAgo(3),fechaAlerta:'',notas:'',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+    ]});
+  sHD(3,{daily:[{fecha:dAgo(0),vis:12,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(1),vis:15,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(2),vis:14,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(3),vis:10,prop:0,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(4),vis:16,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(7),vis:18,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(8),vis:14,prop:1,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(9),vis:15,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(10),vis:12,prop:0,r2s:0,avances:[],r2sArr:[],bloqueos:''},{fecha:dAgo(11),vis:17,prop:1,r2s:1,avances:[],r2sArr:[],bloqueos:''}],
+    pipeline:[
+      {nombre:'Restaurante El Solar',decisor:'Beatriz Leal',telefono:'320 001 1111',etapa:'2',fechaPropuesta:dAgo(12),fechaAlerta:'',notas:'',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Donde la Abuela',decisor:'Rosa Quintero',telefono:'321 002 2222',etapa:'1',fechaPropuesta:dAgo(6),fechaAlerta:'',notas:'',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'Mini Market Fresco',decisor:'David Niño',telefono:'322 003 3333',etapa:'3',fechaPropuesta:dAgo(18),fechaAlerta:dAhead(2),notas:'Confirmar firma esta semana',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Empanadas La Villa',decisor:'Sandra Torres',telefono:'323 004 4444',etapa:'4',fechaPropuesta:dAgo(22),fechaAlerta:dAhead(2),notas:'Enviar menú — pendiente fotos del lugar',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'Café del Parque',decisor:'Andrés Muñoz',telefono:'324 005 5555',etapa:'5',fechaPropuesta:dAgo(26),fechaAlerta:dAhead(7),notas:'HO mes siguiente confirmado',backlog:'si',tipo:'p1',hoEntregado:false,hoFecha:''},
+      {nombre:'Panadería El Trigo',decisor:'Martha Salcedo',telefono:'325 006 6666',etapa:'2',fechaPropuesta:dAgo(14),fechaAlerta:'',notas:'',backlog:'no',tipo:'p0',hoEntregado:false,hoFecha:''},
+      {nombre:'Heladería Polar',decisor:'Camilo Reyes',telefono:'326 007 7777',etapa:'1',fechaPropuesta:dAgo(5),fechaAlerta:'',notas:'',backlog:'no',tipo:'p1',hoEntregado:false,hoFecha:''},
+    ]});
+  cH=1;
+  document.querySelectorAll('.chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('h-inicio').classList.add('active');
+  document.querySelectorAll('#nav-hunter .nav-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.getElementById('nw-hunter').style.display='block';
+  document.getElementById('hunter-chips').style.display='flex';
+  document.getElementById('nw-lider').style.display='none';
+  document.querySelectorAll('.role-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderInicio();renderPipe();
+  const btn=document.getElementById('demo-btn');
+  btn.textContent='✓ Demo cargado';btn.style.background='#1D9E75';
+  showToast('Demo cargado · H1: 14 R2S · H2: 8 R2S · H3: 4 R2S','#0F6E56');
+}
+ 
+function clearDemoData(){
+  for(let i=1;i<=7;i++)localStorage.removeItem('ht_'+i);
+  cH=1;renderInicio();renderPipe();
+  const btn=document.getElementById('demo-btn');btn.textContent='🧪 Cargar datos demo';btn.style.background='var(--orange)';
+  showToast('Datos borrados','#888780');
+}
+ 
+function renderConfig(){
+  const cfg=getCfg(),claves=getClavesConfig();
+  document.getElementById('config-body').innerHTML=Array.from({length:7},(_,i)=>{
+    const id=i+1,av=AVC[i];
+    const s=calcSt(id),pts=calcPuntos(id);
+    return`<div style="display:grid;grid-template-columns:40px 1fr 90px 90px 90px 80px;gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div class="avatar" style="background:${av.bg};color:${av.c};width:36px;height:36px">H${id}</div>
+      <div><label class="flabel first" style="font-size:11px">Nombre del hunter</label>
+        <input type="text" id="cfg-name-${id}" value="${cfg.names[i]||HN_DEFAULT[i]}" placeholder="Nombre real"></div>
+      <div><label class="flabel first" style="font-size:11px">Meta activ.</label>
+        <input type="number" id="cfg-meta-${id}" value="${cfg.metas[i]||20}" min="1" max="60" style="width:100%"></div>
+      <div><label class="flabel first" style="font-size:11px">Meta puntos</label>
+        <input type="number" id="cfg-puntos-${id}" value="${cfg.metasPuntos?.[i]||30}" min="1" max="200" style="width:100%"></div>
+      <div><label class="flabel first" style="font-size:11px">PIN de acceso</label>
+        <input type="password" id="clave-h${id}" maxlength="4" placeholder="4 díg." value="${claves.hunters[i]||''}" style="text-align:center;letter-spacing:.2em;font-size:15px" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4)"></div>
+      <div style="margin-top:18px">
+        <span class="badge ${pBdg(s.ho/(cfg.metas[i]||20))}" style="font-size:9px">${s.ho} activ.</span>
+        ${pts.desbloqueado?`<div style="margin-top:4px"><span class="badge b-orange" style="font-size:9px">${pts.puntos} pts</span></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function saveConfig(){
+  const names=Array.from({length:7},(_,i)=>document.getElementById('cfg-name-'+(i+1))?.value||HN_DEFAULT[i]);
+  const metas=Array.from({length:7},(_,i)=>parseInt(document.getElementById('cfg-meta-'+(i+1))?.value||20));
+  const metasPuntos=Array.from({length:7},(_,i)=>parseInt(document.getElementById('cfg-puntos-'+(i+1))?.value||30));
+  setCfg({names,metas,metasPuntos});
+  saveClaves();
+  document.querySelectorAll('.chip').forEach((c,i)=>c.textContent='H'+(i+1));
+  showToast('Configuración y claves guardadas correctamente.','#0F6E56');
+  renderConfig();
+}
+function toggleEtapaDetalle(id){
+  const el=document.getElementById(id);
+  const arrow=document.getElementById(id+'-arrow');
+  if(!el)return;
+  const open=el.style.display!=='none';
+  // Cerrar todos primero
+  document.querySelectorAll('[id^="ep-"]').forEach(div=>{
+    if(!div.id.endsWith('-arrow')){
+      div.style.display='none';
+      const a=document.getElementById(div.id+'-arrow');
+      if(a)a.textContent='▾ ver';
+    }
+  });
+  // Abrir el clickeado si estaba cerrado
+  if(!open){
+    el.style.display='block';
+    if(arrow)arrow.textContent='▴ ocultar';
+  }
+}
+
+function toggleEtapaLider(id){
+  const el=document.getElementById(id);
+  const arrow=document.getElementById(id+'-arrow');
+  if(!el)return;
+  const open=el.style.display!=='none';
+  // Cerrar todos los del mismo hunter (prefijo dp-N-)
+  const prefix=id.split('-').slice(0,2).join('-');
+  document.querySelectorAll(`[id^="${prefix}-"]`).forEach(div=>{
+    if(!div.id.endsWith('-arrow')){div.style.display='none';const a=document.getElementById(div.id+'-arrow');if(a)a.textContent='▾';}
+  });
+  if(!open){el.style.display='block';if(arrow)arrow.textContent='▴';}
+}
+
+function cambiarEtapaLider(hid,ri,etapa){
+  const hd=gHD(hid);
+  if(!hd.pipeline[ri])return;
+  hd.pipeline[ri].etapa=etapa;
+  sHD(hid,hd);
+  renderDash();
+  showToast('Etapa actualizada','#16A34A');
+}
+
+function cambiarTipoLider(hid,ri,tipo){
+  const hd=gHD(hid);
+  if(!hd.pipeline[ri])return;
+  hd.pipeline[ri].tipo=tipo;
+  sHD(hid,hd);
+  renderDash();
+  showToast('Tipo actualizado — '+tipo.toUpperCase(),'#16A34A');
+}
+
+function cambiarEtapaRapido(ri,etapa){
+  const hd=gHD(cH);
+  if(!hd.pipeline[ri])return;
+  hd.pipeline[ri].etapa=etapa;
+  sHD(cH,hd);
+  // Guardar qué etapas están abiertas antes de re-renderizar
+  const abiertos=[...document.querySelectorAll('[id^="ep-"]')]
+    .filter(el=>!el.id.endsWith('-arrow')&&el.style.display!=='none')
+    .map(el=>el.id);
+  renderPipe();renderInicio();
+  if(document.getElementById('h-mes').classList.contains('active'))renderMes();
+  // Restaurar etapas abiertas
+  abiertos.forEach(id=>{
+    const el=document.getElementById(id);
+    const arrow=document.getElementById(id+'-arrow');
+    if(el){el.style.display='block';if(arrow)arrow.textContent='▴ ocultar';}
+  });
+  showToast('Etapa actualizada','#16A34A');
+}
+
+function toggleHunterPipe(id,row){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  const arrow=row.querySelector('span[style*="hint"]');
+  if(arrow)arrow.textContent=open?'▾ ver pipeline':'▴ ocultar pipeline';
+}
+ 
+function showToast(msg,bg){
+  let t=document.getElementById('_toast');
+  if(!t){t=document.createElement('div');t.id='_toast';document.body.appendChild(t);}
+  t.textContent=msg;t.style.background=bg||'#111110';t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-8px)';},4000);
+}
+ 
+// Close autocomplete on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.ac-wrap')) document.querySelectorAll('.ac-list').forEach(l=>l.classList.remove('open'));
+});
+ 
+document.getElementById('new-fecha-prop').value=today();
+
+// ── LOGIN ──
+let loginRol='', loginHunterId=0, loginPin_='';
+
+function getClavesConfig(){return gd('ht_claves')||{hunters:Array(7).fill(''),lider:''};}
+function setClavesConfig(c){sd('ht_claves',c);}
+
+function volverLogin(){
+  loginPin_='';loginRol='';loginHunterId=0;
+  // Resetear pasos del login
+  document.getElementById('login-step1').style.display='block';
+  document.getElementById('login-step2').style.display='none';
+  document.getElementById('login-step3').style.display='none';
+  document.getElementById('login-error').style.display='none';
+  // Mostrar switcher de rol nuevamente
+  document.querySelector('.role-sw').style.display='flex';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ── PROPUESTAS (botón página principal) ──
+function getPropuestas(){return gd('ht_propuestas')||Array(7).fill(0);}
+function setPropuestas(arr){sd('ht_propuestas',arr);}
+
+function abrirModalPropuesta(){
+  const cfg=getCfg();
+  const lista=document.getElementById('propuesta-hunter-list');
+  document.getElementById('propuesta-confirmado').style.display='none';
+  document.getElementById('propuesta-footer').innerHTML=`<button class="btn btn-o" style="width:auto;padding:9px 20px;margin:0" onclick="cerrarModalPropuesta()">Cancelar</button>`;
+  lista.style.display='block';
+  lista.innerHTML=Array.from({length:7},(_,i)=>{
+    const nombre=cfg.names[i]||HN_DEFAULT[i];
+    const av=AVC[i];
+    return`<button onclick="registrarPropuesta(${i})" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;font-family:'Plus Jakarta Sans',sans-serif">
+      <div class="avatar" style="background:${av.bg};color:${av.c};width:32px;height:32px;font-size:11px;flex-shrink:0">H${i+1}</div>
+      <span style="font-size:14px;font-weight:600;color:var(--dark)">${nombre}</span>
+    </button>`;
+  }).join('');
+  document.getElementById('propuesta-modal').classList.add('open');
+}
+
+function registrarPropuesta(idx){
+  const arr=getPropuestas();
+  arr[idx]=(arr[idx]||0)+1;
+  setPropuestas(arr);
+  const nombre=getCfg().names[idx]||HN_DEFAULT[idx];
+  document.getElementById('propuesta-hunter-list').style.display='none';
+  document.getElementById('propuesta-ok-msg').textContent=nombre+' — '+arr[idx]+' propuesta'+( arr[idx]!==1?'s':'')+' registradas';
+  document.getElementById('propuesta-confirmado').style.display='block';
+  document.getElementById('propuesta-footer').innerHTML=`<button class="btn btn-p" style="width:auto;padding:9px 20px;margin:0" onclick="cerrarModalPropuesta()">Listo</button>`;
+}
+
+function cerrarModalPropuesta(){
+  document.getElementById('propuesta-modal').classList.remove('open');
+}
+
+// ── CIERRE DE MES ──
+// ── CIERRE DE MES HUNTER ──
+let _snapCierre=null; // snapshot para deshacer
+
+function abrirCierreHunter(){
+  document.getElementById('cierre-hunter-step1').style.display='block';
+  document.getElementById('cierre-hunter-step2').style.display='none';
+  document.getElementById('cierre-hunter-modal').classList.add('open');
+}
+
+function cierreHunterVerReporte(){
+  // Ver reporte primero, luego ejecutar
+  verReporteHunter(cH);
+  document.getElementById('cierre-hunter-modal').classList.remove('open');
+  // Agregar botón de ejecutar cierre en el reporte
+  const btnArea=document.querySelector('#reporte-cierre>div>div:first-child');
+  if(btnArea&&!document.getElementById('btn-ejecutar-cierre-hunter')){
+    const btn=document.createElement('button');
+    btn.id='btn-ejecutar-cierre-hunter';
+    btn.textContent='✓ Ejecutar cierre de mi mes';
+    btn.style.cssText='background:#16A34A;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:\'Plus Jakarta Sans\',sans-serif';
+    btn.onclick=ejecutarCierreHunter;
+    btnArea.insertBefore(btn,btnArea.children[1]);
+  }
+}
+
+function ejecutarCierreHunter(){
+  const hd=gHD(cH);
+  // Guardar snapshot para deshacer
+  _snapCierre=JSON.parse(JSON.stringify(hd));
+  const cerrados=hd.pipeline.filter(p=>p.hoEntregado).length;
+  // Eliminar HO entregados, conservar resto
+  hd.pipeline=hd.pipeline.filter(p=>!p.hoEntregado);
+  hd.daily=[];
+  sHD(cH,hd);
+  document.getElementById('reporte-cierre').style.display='none';
+  document.getElementById('cierre-hunter-step1').style.display='none';
+  document.getElementById('cierre-hunter-step2').style.display='block';
+  document.getElementById('cierre-hunter-ok-msg').textContent=
+    `${cerrados} cierre${cerrados!==1?'s':''} archivado${cerrados!==1?'s':''} · ${hd.pipeline.length} restaurante${hd.pipeline.length!==1?'s':''}  en pipeline activo`;
+  document.getElementById('cierre-hunter-modal').classList.add('open');
+  renderMes();
+}
+
+function deshacerCierreHunter(){
+  if(!_snapCierre)return;
+  sHD(cH,_snapCierre);
+  _snapCierre=null;
+  document.getElementById('cierre-hunter-modal').classList.remove('open');
+  renderMes();renderPipe();
+  showToast('Cierre deshecho — datos restaurados','#D97706');
+}
+
+function abrirCierreMes(){
+  const mes=new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+  document.getElementById('cierre-mes-label').textContent=mes;
+  const cfg=getCfg();
+  document.getElementById('cierre-hunters-list').innerHTML=Array.from({length:7},(_,i)=>{
+    const id=i+1,s=calcSt(id),pts=calcPuntos(id);
+    const cerrados=gHD(id).pipeline.filter(p=>p.hoEntregado);
+    const av=AVC[i];
+    const c=pCol(s.pct);
+    return`<div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="avatar" style="background:${av.bg};color:${av.c};width:32px;height:32px;font-size:11px">H${id}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--dark)">${cfg.names[i]||HN_DEFAULT[i]}</div>
+        <div style="font-size:11px;color:var(--hint);margin-top:1px">${cerrados.length} cierre${cerrados.length!==1?'s':''} con HO · ${s.ho}/${s.meta} activaciones</div></div>
+        <span class="badge ${pBdg(s.pct)}">${Math.round(s.pct*100)}%</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge b-gray">${s.ho} activaciones</span>
+        ${pts.desbloqueado?`<span class="badge b-orange">🏆 ${pts.puntos} puntos</span>`:'<span class="badge b-gray">Puntos bloqueados</span>'}
+        <span style="cursor:pointer;font-size:11px;font-weight:600;color:var(--orange);text-decoration:underline" onclick="verReporteHunter(${id})">Ver reporte individual →</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('cierre-modal').classList.add('open');
+}
+
+function verReporteHunter(id){
+  const cfg=getCfg(),s=calcSt(id),pts=calcPuntos(id);
+  const nombre=cfg.names[id-1]||HN_DEFAULT[id-1];
+  const mes=new Date().toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+  const cerrados=gHD(id).pipeline.filter(p=>p.hoEntregado);
+  const c=pCol(s.pct),cp=pCol(pts.pct);
+  const av=AVC[id-1];
+
+  document.getElementById('reporte-contenido').innerHTML=`
+    <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:16px;border:1.5px solid #e5e5e5">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid #f0f0f0">
+        <div style="width:48px;height:48px;border-radius:50%;background:${av.bg};color:${av.c};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${nombre.substring(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-size:20px;font-weight:800;color:#0f0f0f;font-family:'Plus Jakarta Sans',sans-serif">${nombre}</div>
+          <div style="font-size:12px;color:#737373;margin-top:2px">Reporte de cierre · ${mes}</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:28px;font-weight:800;color:${c};font-family:'Plus Jakarta Sans',sans-serif">${Math.round(s.pct*100)}%</div>
+          <div style="font-size:11px;color:#737373">cumplimiento</div>
+        </div>
+      </div>
+
+      <!-- Barra activaciones -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#737373">Activaciones del mes</span>
+          <span style="font-size:24px;font-weight:800;color:#0f0f0f;font-family:'Plus Jakarta Sans',sans-serif">${s.ho} <span style="font-size:14px;font-weight:400;color:#a3a3a3">/ ${s.meta}</span></span>
+        </div>
+        <div style="background:#f0f0f0;border-radius:8px;height:16px;overflow:hidden">
+          <div style="height:100%;border-radius:8px;width:${Math.min(s.pct*100,100)}%;background:${c}"></div>
+        </div>
+        <div style="font-size:11px;color:#a3a3a3;margin-top:5px">P0 y P1 con HO entregado · meta: ${s.meta}</div>
+      </div>
+
+      <!-- Barra puntos -->
+      <div style="margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${pts.desbloqueado?'#FF5B15':'#737373'}">🏆 Puntos comisionales</span>
+          <span style="font-size:24px;font-weight:800;color:#0f0f0f;font-family:'Plus Jakarta Sans',sans-serif">${pts.desbloqueado?pts.puntos:'—'} <span style="font-size:14px;font-weight:400;color:#a3a3a3">${pts.desbloqueado?'/ '+pts.metaPuntos:'bloqueado'}</span></span>
+        </div>
+        ${pts.desbloqueado?`
+        <div style="background:#f0f0f0;border-radius:8px;height:16px;overflow:hidden">
+          <div style="height:100%;border-radius:8px;width:${Math.min(pts.pct*100,100)}%;background:${cp}"></div>
+        </div>
+        <div style="font-size:11px;color:#a3a3a3;margin-top:5px">P0=2pts · P1=1pt · meta: ${pts.metaPuntos} pts</div>`
+        :`<div style="background:#f9f9f9;border:1.5px dashed #e5e5e5;border-radius:8px;padding:10px 14px;font-size:12px;color:#a3a3a3">Faltan ${s.meta-s.ho} activaciones para desbloquear los puntos</div>`}
+      </div>
+
+      <!-- Restaurantes cerrados -->
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#737373;margin-bottom:12px">Restaurantes cerrados con HO (${cerrados.length})</div>
+        ${cerrados.length===0?`<div style="text-align:center;padding:20px;color:#a3a3a3;font-size:13px">Sin cierres este mes</div>`:`
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#f9f9f9">
+              <th style="text-align:left;padding:10px 12px;font-weight:700;color:#737373;border-bottom:2px solid #e5e5e5">Restaurante</th>
+              <th style="text-align:left;padding:10px 12px;font-weight:700;color:#737373;border-bottom:2px solid #e5e5e5">Tipo</th>
+              <th style="text-align:left;padding:10px 12px;font-weight:700;color:#737373;border-bottom:2px solid #e5e5e5">Teléfono</th>
+              <th style="text-align:left;padding:10px 12px;font-weight:700;color:#737373;border-bottom:2px solid #e5e5e5">Fecha propuesta</th>
+              <th style="text-align:left;padding:10px 12px;font-weight:700;color:#737373;border-bottom:2px solid #e5e5e5">Fecha HO</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${cerrados.map((p,i)=>`<tr style="background:${i%2===0?'#fff':'#fafafa'}">
+              <td style="padding:10px 12px;font-weight:600;color:#0f0f0f;border-bottom:1px solid #f0f0f0">${p.nombre}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0"><span style="background:${p.tipo==='p0'?'#FFF3EE':'#F0FDF4'};color:${p.tipo==='p0'?'#C43D06':'#14532D'};padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700">${(p.tipo||'p2').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;color:#404040;border-bottom:1px solid #f0f0f0">${p.telefono||'—'}</td>
+              <td style="padding:10px 12px;color:#404040;border-bottom:1px solid #f0f0f0">${p.fechaPropuesta||'—'}</td>
+              <td style="padding:10px 12px;color:#16A34A;font-weight:600;border-bottom:1px solid #f0f0f0">${p.hoFecha||'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`}
+      </div>
+    </div>`;
+
+  document.getElementById('cierre-modal').classList.remove('open');
+  document.getElementById('reporte-cierre').style.display='block';
+}
+
+function cerrarReporte(){
+  document.getElementById('reporte-cierre').style.display='none';
+}
+
+function ejecutarCierreMes(){
+  Array.from({length:7},(_,i)=>{
+    const id=i+1,hd=gHD(id);
+    // Conservar solo los restaurantes SIN HO entregado
+    hd.pipeline=hd.pipeline.filter(p=>!p.hoEntregado);
+    // Limpiar registros diarios
+    hd.daily=[];
+    sHD(id,hd);
+  });
+  // Limpiar propuestas del botón principal
+  setPropuestas(Array(7).fill(0));
+  document.getElementById('cierre-modal').classList.remove('open');
+  renderDash();
+  showToast('Cierre de mes ejecutado · Pipeline activo conservado · Registros reiniciados','#16A34A');
+}
+
+function mostrarDetallePropuestas(id){
+  const total=getPropuestas()[id-1]||0;
+  const nombre=hunterName(id);
+  document.getElementById('metrica-modal-title').textContent=`📋 Propuestas — ${nombre}`;
+  document.getElementById('metrica-modal-body').innerHTML=total===0
+    ?'<div style="text-align:center;padding:24px;color:var(--hint);font-size:13px">Sin propuestas registradas aún</div>'
+    :`<div style="padding:16px 0">
+        <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--orange-lt);border-radius:12px;border:1.5px solid var(--orange-mid)">
+          <div style="font-size:48px;font-weight:800;color:var(--orange);line-height:1">${total}</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--dark)">Propuesta${total!==1?'s':''} registrada${total!==1?'s':''}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Generada${total!==1?'s':''} desde la página principal</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:12px 16px;background:var(--surface2);border-radius:10px;font-size:12px;color:var(--hint)">
+          Este contador se acumula cada vez que alguien selecciona a ${nombre} en el botón "Crear propuesta" de la página principal.
+        </div>
+      </div>`;
+  document.getElementById('metrica-modal').classList.add('open');
+}
+
+function entrarComoLider(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('nw-hunter').style.display='none';
+  document.getElementById('hunter-chips').style.display='none';
+  document.getElementById('nw-lider').style.display='block';
+  document.querySelector('.role-sw').style.display='flex';
+  document.querySelectorAll('.role-btn').forEach((b,i)=>b.classList.toggle('active',i===1));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('l-dash').classList.add('active');
+  document.querySelectorAll('#nav-lider .nav-btn')[0].classList.add('active');
+  renderDash();
+}
+
+function loginElegirRol(rol){
+  loginRol=rol;
+  if(rol==='hunter'){
+    document.getElementById('login-step1').style.display='none';
+    document.getElementById('login-step2').style.display='block';
+    const cfg=getCfg(),claves=getClavesConfig();
+    const lista=Array.from({length:7},(_,i)=>{
+      const nombre=cfg.names[i]||HN_DEFAULT[i];
+      const tieneClave=claves.hunters[i]&&claves.hunters[i].length===4;
+      if(!tieneClave)return'';
+      return`<button onclick="loginElegirHunter(${i+1})" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 18px;text-align:left;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:12px">
+        <div style="width:32px;height:32px;border-radius:50%;background:${AVC[i].bg};color:${AVC[i].c};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">H${i+1}</div>
+        ${nombre}
+      </button>`;
+    }).filter(Boolean);
+    document.getElementById('login-hunter-list').innerHTML=lista.length
+      ? lista.join('')
+      : `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,.35);font-size:13px;line-height:1.6">No hay hunters con PIN asignado.<br>El líder debe configurar los accesos<br>en <span style="color:var(--orange)">Configuración</span>.</div>`;
+  } else {
+    // Líder entra directo sin PIN
+    entrarComoLider();
+  }
+}
+
+function loginElegirHunter(id){
+  loginHunterId=id;
+  loginPin_='';
+  const cfg=getCfg();
+  document.getElementById('login-step2').style.display='none';
+  document.getElementById('login-step3').style.display='block';
+  document.getElementById('login-pin-name').textContent=cfg.names[id-1]||HN_DEFAULT[id-1];
+  updatePinDots();
+}
+
+function loginBack(step){
+  loginPin_='';
+  document.getElementById('login-error').style.display='none';
+  if(step===1){
+    document.getElementById('login-step2').style.display='none';
+    document.getElementById('login-step1').style.display='block';
+  } else {
+    document.getElementById('login-step3').style.display='none';
+    if(loginRol==='hunter'){document.getElementById('login-step2').style.display='block';}
+    else{document.getElementById('login-step1').style.display='block';}
+  }
+  updatePinDots();
+}
+
+function loginPin(n){
+  if(loginPin_.length>=4)return;
+  loginPin_+=String(n);
+  updatePinDots();
+  if(loginPin_.length===4) setTimeout(loginVerificar,150);
+}
+
+function loginPinDel(){
+  loginPin_=loginPin_.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>{
+    d.classList.toggle('filled',i<loginPin_.length);
+  });
+}
+
+function loginVerificar(){
+  const claves=getClavesConfig();
+  const ok=loginPin_===claves.hunters[loginHunterId-1];
+  if(ok){
+    document.getElementById('login-screen').style.display='none';
+    cH=loginHunterId;
+    document.getElementById('nw-hunter').style.display='block';
+    document.getElementById('hunter-chips').style.display='none';
+    document.getElementById('nw-lider').style.display='none';
+    document.querySelector('.role-sw').style.display='none';
+    document.querySelectorAll('.role-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('h-inicio').classList.add('active');
+    document.querySelectorAll('#nav-hunter .nav-btn')[0].classList.add('active');
+    renderInicio();renderPipe();
+  } else {
+    loginPin_='';
+    updatePinDots();
+    const err=document.getElementById('login-error');
+    err.style.display='block';
+    setTimeout(()=>err.style.display='none',2500);
+  }
+}
+
+function renderClaves(){
+  const cfg=getCfg(),claves=getClavesConfig();
+  document.getElementById('claves-body').innerHTML=`
+    ${Array.from({length:7},(_,i)=>{
+      const nombre=cfg.names[i]||HN_DEFAULT[i];
+      const av=AVC[i];
+      return`<div style="display:grid;grid-template-columns:40px 1fr 140px;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)">
+        <div class="avatar" style="background:${av.bg};color:${av.c};width:36px;height:36px">H${i+1}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--dark)">${nombre}</div>
+        <input type="password" id="clave-h${i+1}" maxlength="4" placeholder="4 dígitos" value="${claves.hunters[i]||''}" style="text-align:center;letter-spacing:.3em;font-size:16px" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4)">
+      </div>`;
+    }).join('')}
+    <div style="font-size:11px;color:var(--hint);margin-top:12px">Las claves vacías no permiten acceso. Asigna un PIN de 4 dígitos para habilitar el acceso de cada hunter.</div>`;
+}
+
+function saveClaves(){
+  const hunters=Array.from({length:7},(_,i)=>document.getElementById(`clave-h${i+1}`)?.value||'');
+  const invalido=hunters.findIndex(c=>c.length>0&&c.length<4);
+  if(invalido>=0){showToast('El PIN debe tener exactamente 4 dígitos','#E24B4A');return;}
+  const claves=getClavesConfig();
+  setClavesConfig({hunters,lider:claves.lider||''});
+  showToast('Claves guardadas correctamente','#0F6E56');
+}
+
+// ── ARRANQUE: siempre mostrar login ──
+// El líder entra tocando "Soy Líder" (sin PIN)
+// Los hunters con PIN asignado aparecen en la lista
+(function arranque(){
+  document.getElementById('login-screen').style.display='flex';
+})();
+
+renderInicio();
+</script>
+</body>
+</html>
+ 
